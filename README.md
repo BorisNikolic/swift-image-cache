@@ -17,10 +17,13 @@
 - 📂 **Format-Preserving Storage** — Stores original bytes (PNG, JPEG, WebP) — no re-encoding
 - ⏰ **4-Hour TTL** — Disk-cached images expire automatically; configurable via `ImageLoader.Configuration`
 - 🔄 **Cancellation-Safe Deduplication** — Shared downloads survive individual caller cancellation (e.g. cell reuse during scroll)
+- 📐 **Automatic Downsampling** — Images are thumbnailed to screen dimensions before memory caching, reducing decoded size from ~12MB to ~1-2MB per image
+- 🗂️ **Disk Size Limit with LRU Eviction** — Configurable disk quota (default 100MB) with oldest-first eviction and 70% trim ratio
+- ⚡ **Synchronous Cache Lookup** — `cachedImage(for:)` enables instant display in SwiftUI body / UIKit cell binding with zero async overhead
 - 🎨 **SwiftUI + UIKit** — `CachedAsyncImage` and `UICachedImageView` with identical visual behavior
 - ⚠️ **Error State Views** — Both SDK views show error indicators on load failure
 - 🧹 **Manual Cache Invalidation** — Clear all caches or remove specific images
-- ⚙️ **Configurable** — `ImageLoader.Configuration` for TTL, memory count/size limits
+- ⚙️ **Configurable** — `ImageLoader.Configuration` for TTL, memory/disk limits, thumbnail dimension
 - 🧪 **Fully Testable** — Split protocols (`MemoryImageCaching`, `DiskImageCaching`, `ImageDownloading`) with dependency injection
 - 🌍 **Localized** — All strings via `NSLocalizedString`, English `.strings` file included
 - ♿ **Accessible** — VoiceOver labels, hints, traits, and identifiers on all elements
@@ -99,9 +102,11 @@ await ImageLoader.shared.removeCachedImage(for: url)
 import RoundsImageKit
 
 let loader = ImageLoader(configuration: .init(
-    ttl: 2 * 60 * 60,           // 2-hour TTL
-    memoryCacheCountLimit: 50,    // max 50 images in memory
-    memoryCacheSizeLimit: 25_000_000  // 25 MB memory limit
+    ttl: 2 * 60 * 60,              // 2-hour TTL
+    memoryCacheCountLimit: 50,       // max 50 images in memory
+    memoryCacheSizeLimit: 100_000_000, // 100 MB memory limit
+    diskCacheSizeLimit: 50_000_000,  // 50 MB disk limit
+    maxThumbnailDimension: 512       // downsample to 512pt max
 ))
 let image = try await loader.image(for: url)
 ```
@@ -114,11 +119,13 @@ let image = try await loader.image(for: url)
 ┌──────────────────────────────────────────────────┐
 │                   ImageLoader                     │
 │            (actor — main public API)              │
-│         Configuration: TTL, memory limits         │
+│    Configuration: TTL, memory/disk limits,        │
+│    thumbnail dimension, LRU eviction              │
 ├────────────────┬────────────┬────────────────────┤
 │  MemoryCache   │ DiskCache  │  ImageDownloader    │
 │   (NSCache)    │(FileManager)│   (URLSession)     │
-│ stores UIImage │stores Data │ Task.detached dedup │
+│ downsampled    │raw bytes   │ Task.detached dedup │
+│ sync lookup    │size limit  │ cancellation-safe   │
 ├────────────────┴────────────┴────────────────────┤
 │               Protocol Layer                      │
 │  MemoryImageCaching    DiskImageCaching           │
@@ -139,11 +146,13 @@ let image = try await loader.image(for: url)
 ### Cache Flow
 
 ```
-Request → Memory Cache (hit?) → ✅ Return UIImage
+Request → Sync Memory Check (hit?) → ✅ Return instantly (no async)
                   ↓ (miss)
-         Disk Cache (hit + valid TTL?) → ✅ Promote to memory, Return
+         Async Memory Cache (hit?) → ✅ Return UIImage
+                  ↓ (miss)
+         Disk Cache (hit + valid TTL?) → ✅ Downsample → Promote to memory, Return
                   ↓ (miss or expired)
-         Network Download → ✅ Store UIImage in memory, raw Data on disk, Return
+         Network Download → ✅ Downsample to memory, raw Data to disk, Return
 ```
 
 ### Cancellation-Safe Deduplication
@@ -179,6 +188,7 @@ The included **ExampleApp** demonstrates both SwiftUI and UIKit integration with
 | **ID Badges** | Capsule with gradient | Rounded label |
 | **Accessibility** | VoiceOver labels, hints, traits | `isAccessibilityElement`, labels, hints |
 | **Localization** | `NSLocalizedString` via Theme | Same strings via Theme |
+| **Prefetching** | SwiftUI `LazyVGrid` (automatic) | `UICollectionViewDataSourcePrefetching` |
 
 ### App Architecture
 
@@ -221,13 +231,13 @@ xcodebuild test -project ExampleApp/ExampleApp.xcodeproj \
 |-------|-------|---------------|
 | **SDK Tests** | | |
 | `MemoryCacheTests` | 5 | Store, retrieve, remove, clear, independence |
-| `DiskCacheTests` | 6 | Store, retrieve, remove, clear, TTL expiry, valid TTL |
+| `DiskCacheTests` | 8 | Store, retrieve, remove, clear, TTL expiry, valid TTL, size eviction, sweep |
 | `ImageDownloaderTests` | 4 | Success, invalid data, network error, HTTP 404 |
 | `ImageLoaderTests` | 5 | Full flow, memory hit, disk hit, clear, remove |
 | **App Tests** | | |
 | `ImageItemTests` | 5 | JSON decoding, URL parsing, empty string, identifiable, hashable |
 | `ImageListViewModelTests` | 5 | Fetch success, loading state, error, clearCache, overlap guard |
-| **Total** | **30** | |
+| **Total** | **32** | |
 
 - All SDK tests use **protocol-based mocks** — no mocking frameworks
 - ViewModel tests use `MockImageListService` — no network calls
@@ -321,8 +331,7 @@ rounds/
 │   ├── ExampleAppTests/              # 10 unit tests (ImageItem + ViewModel)
 │   └── ExampleAppUITests/            # 8 UI tests (stubbed network)
 ├── 🤖 .claude/                       # Claude Code config
-│   ├── rules/                        # Coding style, architecture, testing rules
-│   └── skills/                       # run-tests, write-tests skills
+│   └── rules/                        # Coding style, architecture, testing rules
 ├── ⚙️ .github/workflows/ci.yml       # GitHub Actions CI pipeline
 ├── ⚙️ BuildTools/                     # Pre-commit hook script
 ├── 📄 CLAUDE.md                      # Project guide for AI assistance
