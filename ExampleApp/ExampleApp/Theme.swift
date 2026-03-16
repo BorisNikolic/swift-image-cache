@@ -24,7 +24,7 @@ enum Theme {
     static let cornerRadius: CGFloat = 14
     static let cellSpacing: CGFloat = 12
     static let gridPadding: CGFloat = 16
-    static let badgeCornerRadius: CGFloat = 12
+    static let badgeCornerRadius: CGFloat = 14
     static let shadowRadius: CGFloat = 4
     static let shadowOpacity: CGFloat = 0.08
     static let borderOpacity: CGFloat = 0.06
@@ -46,8 +46,8 @@ enum Theme {
     static let sectionInset: CGFloat = 10
     static let gradientHeightMultiplier: CGFloat = 0.35
     static let gradientOpacity: CGFloat = 0.45
-    static let badgeLabelFontSize: CGFloat = 12
-    static let badgeLabelHeight: CGFloat = 24
+    static let badgeLabelFontSize: CGFloat = 13
+    static let badgeLabelHeight: CGFloat = 28
     static let paddedLabelExtraWidth: CGFloat = 16
 
     // MARK: - SF Symbols
