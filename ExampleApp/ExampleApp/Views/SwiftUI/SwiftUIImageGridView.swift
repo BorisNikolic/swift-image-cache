@@ -3,38 +3,39 @@
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
 
-import SwiftUI
 import RoundsImageKit
+import SwiftUI
 
 struct SwiftUIImageGridView: View {
     @StateObject private var viewModel = ImageListViewModel()
 
     private let columns = [
-        GridItem(.flexible(), spacing: 12),
-        GridItem(.flexible(), spacing: 12)
+        GridItem(.flexible(), spacing: Theme.cellSpacing),
+        GridItem(.flexible(), spacing: Theme.cellSpacing)
     ]
 
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
-                    headerView
-                    contentView
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 20)
+                contentView
+                    .padding(.horizontal, Theme.gridPadding)
+                    .padding(.vertical, Theme.verticalPadding)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle("RoundsImageKit")
+            .navigationTitle(Theme.Strings.appTitle)
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         Task { await viewModel.clearCache() }
                     } label: {
-                        Image(systemName: "arrow.triangle.2.circlepath")
+                        Image(systemName: Theme.SFSymbol.clearCache)
                             .font(.body.weight(.medium))
+                            .foregroundStyle(Color(.label))
                     }
+                    .accessibilityIdentifier(Theme.AccessibilityID.clearCacheButton)
+                    .accessibilityLabel(Theme.Strings.clearCache)
+                    .accessibilityHint(Theme.Strings.clearCacheHint)
                 }
             }
             .refreshable {
@@ -46,25 +47,6 @@ struct SwiftUIImageGridView: View {
                 }
             }
         }
-    }
-
-    // MARK: - Header
-
-    private var headerView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Image Caching Demo", systemImage: "photo.stack")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.indigo)
-
-            Text("Demonstrating two-tier caching (memory + disk) with async loading, request deduplication, and cross-fade transitions.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(3)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-        .padding(.top, 8)
     }
 
     // MARK: - Content
@@ -81,23 +63,26 @@ struct SwiftUIImageGridView: View {
     }
 
     private var loadingView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Theme.loadingSpacing) {
             ProgressView()
-                .scaleEffect(1.2)
-            Text("Loading images...")
+                .scaleEffect(Theme.loadingScaleEffect)
+            Text(Theme.Strings.loadingImages)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 300)
+        .frame(maxWidth: .infinity, minHeight: Theme.contentMinHeight)
+        .accessibilityIdentifier(Theme.AccessibilityID.loadingIndicator)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Theme.Strings.loadingImages)
     }
 
     private func errorView(_ message: String) -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 40))
+        VStack(spacing: Theme.loadingSpacing) {
+            Image(systemName: Theme.SFSymbol.errorTriangle)
+                .font(.system(size: Theme.errorIconSize))
                 .foregroundStyle(.orange)
 
-            Text("Something went wrong")
+            Text(Theme.Strings.errorTitle)
                 .font(.headline)
 
             Text(message)
@@ -105,21 +90,25 @@ struct SwiftUIImageGridView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
-            Button("Retry") {
+            Button(Theme.Strings.retryButton) {
                 Task { await viewModel.fetchImages() }
             }
             .buttonStyle(.borderedProminent)
-            .tint(.indigo)
+            .tint(Theme.accentColor)
+            .accessibilityIdentifier(Theme.AccessibilityID.retryButton)
+            .accessibilityHint(Theme.Strings.retryHint)
         }
-        .frame(maxWidth: .infinity, minHeight: 300)
+        .frame(maxWidth: .infinity, minHeight: Theme.contentMinHeight)
+        .accessibilityIdentifier(Theme.AccessibilityID.errorView)
     }
 
     private var gridView: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
+        LazyVGrid(columns: columns, spacing: Theme.cellSpacing) {
             ForEach(viewModel.images) { item in
                 ImageCell(item: item)
             }
         }
+        .accessibilityIdentifier(Theme.AccessibilityID.imageGrid)
     }
 }
 
@@ -130,40 +119,49 @@ private struct ImageCell: View {
 
     var body: some View {
         CachedAsyncImage(url: item.url) {
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(.tertiarySystemFill))
-                .overlay {
-                    ProgressView()
-                        .tint(.secondary)
-                }
+            placeholderView
         }
-        .aspectRatio(1, contentMode: .fill)
-        .frame(minHeight: 160)
+        .aspectRatio(Theme.cellAspectRatio, contentMode: .fill)
+        .frame(minHeight: Theme.cellMinHeight)
         .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
         .overlay(alignment: .bottomLeading) {
             idBadge
         }
-        .shadow(color: .black.opacity(0.1), radius: 6, x: 0, y: 3)
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.cornerRadius)
+                .stroke(Color.black.opacity(Theme.borderOpacity), lineWidth: Theme.borderWidth)
+        )
+        .shadow(color: .black.opacity(Theme.shadowOpacity), radius: Theme.shadowRadius, x: 0, y: Theme.shadowOffsetY)
+        .accessibilityIdentifier("\(Theme.AccessibilityID.imageCell)_\(item.id)")
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Theme.Strings.imageLabel(item.id))
+        .accessibilityHint(Theme.Strings.imageHint)
+        .accessibilityAddTraits(.isImage)
+    }
+
+    private var placeholderView: some View {
+        RoundedRectangle(cornerRadius: Theme.cornerRadius)
+            .fill(Color(.tertiarySystemFill))
+            .overlay {
+                Image(systemName: Theme.SFSymbol.photoPlaceholder)
+                    .font(.system(size: Theme.placeholderIconSize))
+                    .foregroundStyle(Color(.quaternaryLabel))
+            }
     }
 
     private var idBadge: some View {
-        Text("#\(item.id)")
+        Text(Theme.Strings.imageBadge(item.id))
             .font(.caption2.weight(.bold).monospacedDigit())
             .foregroundStyle(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .padding(.horizontal, Theme.badgePaddingH)
+            .padding(.vertical, Theme.badgePaddingV)
             .background(
                 Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [.indigo, .purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .fill(Theme.accentColor)
             )
-            .padding(8)
+            .padding(Theme.badgePadding)
+            .accessibilityIdentifier(Theme.AccessibilityID.imageBadge)
     }
 }
 

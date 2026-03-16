@@ -10,13 +10,15 @@ struct ContentView: View {
         TabView {
             SwiftUIImageGridView()
                 .tabItem {
-                    Label("SwiftUI", systemImage: "square.grid.2x2.fill")
+                    Label(Theme.Strings.swiftUITab, systemImage: Theme.SFSymbol.swiftUITab)
                 }
+                .accessibilityIdentifier(Theme.AccessibilityID.swiftUITab)
 
             UIKitImageListView()
                 .tabItem {
-                    Label("UIKit", systemImage: "uiwindow.split.2x1")
+                    Label(Theme.Strings.uikitTab, systemImage: Theme.SFSymbol.uikitTab)
                 }
+                .accessibilityIdentifier(Theme.AccessibilityID.uikitTab)
         }
         .tint(.indigo)
     }

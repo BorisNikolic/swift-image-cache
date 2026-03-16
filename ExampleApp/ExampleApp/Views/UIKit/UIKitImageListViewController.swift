@@ -3,8 +3,8 @@
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
 
-import UIKit
 import RoundsImageKit
+import UIKit
 
 final class UIKitImageListViewController: UICollectionViewController {
     private let viewModel: ImageListViewModel
@@ -26,7 +26,7 @@ final class UIKitImageListViewController: UICollectionViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "RoundsImageKit"
+        title = Theme.Strings.appTitle
         view.backgroundColor = .systemGroupedBackground
         collectionView.backgroundColor = .systemGroupedBackground
 
@@ -51,20 +51,30 @@ final class UIKitImageListViewController: UICollectionViewController {
 
     private static func makeLayout() -> UICollectionViewCompositionalLayout {
         let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(0.5),
-            heightDimension: .fractionalWidth(0.5)
+            widthDimension: .fractionalWidth(Theme.gridItemFraction),
+            heightDimension: .fractionalWidth(Theme.gridItemFraction)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 6, bottom: 6, trailing: 6)
+        item.contentInsets = NSDirectionalEdgeInsets(
+            top: Theme.cellInset,
+            leading: Theme.cellInset,
+            bottom: Theme.cellInset,
+            trailing: Theme.cellInset
+        )
 
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .fractionalWidth(0.5)
+            heightDimension: .fractionalWidth(Theme.gridItemFraction)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item, item])
 
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: Theme.sectionInset,
+            leading: Theme.sectionInset,
+            bottom: Theme.sectionInset,
+            trailing: Theme.sectionInset
+        )
 
         return UICollectionViewCompositionalLayout(section: section)
     }
@@ -73,13 +83,18 @@ final class UIKitImageListViewController: UICollectionViewController {
 
     private func configureNavBar() {
         let clearAction = UIAction(
-            title: "Clear Cache",
-            image: UIImage(systemName: "arrow.triangle.2.circlepath")
+            title: Theme.Strings.clearCache,
+            image: UIImage(systemName: Theme.SFSymbol.clearCache)
         ) { [weak self] _ in
             guard let self else { return }
             Task { await self.viewModel.clearCache() }
         }
-        navigationItem.rightBarButtonItem = UIBarButtonItem(primaryAction: clearAction)
+        let button = UIBarButtonItem(primaryAction: clearAction)
+        button.tintColor = .label
+        button.accessibilityIdentifier = Theme.AccessibilityID.clearCacheButton
+        button.accessibilityLabel = Theme.Strings.clearCache
+        button.accessibilityHint = Theme.Strings.clearCacheHint
+        navigationItem.rightBarButtonItem = button
     }
 
     // MARK: - Refresh Control
@@ -110,7 +125,7 @@ final class UIKitImageListViewController: UICollectionViewController {
 
 private final class ImageCell: UICollectionViewCell {
     private let cachedImageView = UICachedImageView()
-    private let idLabel = UILabel()
+    private let idLabel = PaddedLabel()
     private let gradientView = GradientView()
 
     override init(frame: CGRect) {
@@ -130,34 +145,42 @@ private final class ImageCell: UICollectionViewCell {
 
     func configure(with item: ImageItem) {
         cachedImageView.load(from: item.url)
-        idLabel.text = "#\(item.id)"
+        idLabel.text = Theme.Strings.imageBadge(item.id)
+        isAccessibilityElement = true
+        accessibilityIdentifier = "\(Theme.AccessibilityID.imageCell)_\(item.id)"
+        accessibilityLabel = Theme.Strings.imageLabel(item.id)
+        accessibilityHint = Theme.Strings.imageHint
+        accessibilityTraits = .image
     }
 
     private func setupViews() {
-        contentView.layer.cornerRadius = 14
+        contentView.layer.cornerRadius = Theme.cornerRadius
         contentView.clipsToBounds = true
         contentView.backgroundColor = .tertiarySystemFill
 
         layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOpacity = 0.1
-        layer.shadowRadius = 6
-        layer.shadowOffset = CGSize(width: 0, height: 3)
-        layer.cornerRadius = 14
+        layer.shadowOpacity = Float(Theme.shadowOpacity)
+        layer.shadowRadius = Theme.shadowRadius
+        layer.shadowOffset = CGSize(width: 0, height: Theme.shadowOffsetY)
+        layer.cornerRadius = Theme.cornerRadius
+        layer.borderWidth = Theme.borderWidth
+        layer.borderColor = UIColor.black.withAlphaComponent(Theme.borderOpacity).cgColor
 
         cachedImageView.imageContentMode = .scaleAspectFill
-        cachedImageView.placeholder = UIImage(systemName: "photo")
+        cachedImageView.placeholder = UIImage(systemName: Theme.SFSymbol.photoPlaceholder)
         cachedImageView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(cachedImageView)
 
         gradientView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(gradientView)
 
-        idLabel.font = .monospacedDigitSystemFont(ofSize: 11, weight: .bold)
+        idLabel.font = .monospacedDigitSystemFont(ofSize: Theme.badgeLabelFontSize, weight: .bold)
         idLabel.textColor = .white
         idLabel.textAlignment = .center
-        idLabel.backgroundColor = UIColor(red: 0.35, green: 0.24, blue: 0.78, alpha: 1.0)
-        idLabel.layer.cornerRadius = 10
+        idLabel.backgroundColor = Theme.brandPurple
+        idLabel.layer.cornerRadius = Theme.badgeCornerRadius
         idLabel.clipsToBounds = true
+        idLabel.accessibilityIdentifier = Theme.AccessibilityID.imageBadge
         idLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(idLabel)
 
@@ -170,13 +193,21 @@ private final class ImageCell: UICollectionViewCell {
             gradientView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             gradientView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             gradientView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            gradientView.heightAnchor.constraint(equalTo: contentView.heightAnchor, multiplier: 0.35),
+            gradientView.heightAnchor.constraint(equalTo: contentView.heightAnchor, multiplier: Theme.gradientHeightMultiplier),
 
-            idLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            idLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            idLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 36),
-            idLabel.heightAnchor.constraint(equalToConstant: 20),
+            idLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Theme.badgePadding),
+            idLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Theme.badgePadding),
+            idLabel.heightAnchor.constraint(equalToConstant: Theme.badgeLabelHeight),
         ])
+    }
+}
+
+// MARK: - Padded Label
+
+private final class PaddedLabel: UILabel {
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        return CGSize(width: size.width + Theme.paddedLabelExtraWidth, height: size.height)
     }
 }
 
@@ -188,7 +219,7 @@ private final class GradientView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         guard let gradient = layer as? CAGradientLayer else { return }
-        gradient.colors = [UIColor.clear.cgColor, UIColor.black.withAlphaComponent(0.45).cgColor]
+        gradient.colors = [UIColor.clear.cgColor, UIColor.black.withAlphaComponent(Theme.gradientOpacity).cgColor]
         gradient.locations = [0.0, 1.0]
         isUserInteractionEnabled = false
     }
