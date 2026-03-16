@@ -204,6 +204,21 @@ make format
 make lint
 ```
 
+### Code Quality Hooks
+
+**Git pre-commit hook** — Automatically formats and lints staged `.swift` files on every commit. Install with:
+```bash
+make hook
+```
+This runs SwiftFormat (auto-fix) and SwiftLint (strict) on staged files before they enter git history. If linting fails, the commit is blocked.
+
+**Claude Code hook** — When using [Claude Code](https://claude.ai/claude-code), every `.swift` file edit is automatically formatted via SwiftFormat. Configured in `.claude/settings.json` as a `PostToolUse` hook.
+
+**GitHub Actions CI** — Runs on every push and PR to `main`:
+- SwiftFormat lint check (no auto-fix, fails on violations)
+- SwiftLint strict mode
+- SDK unit tests on iOS Simulator
+
 ### Project Structure
 
 ```
