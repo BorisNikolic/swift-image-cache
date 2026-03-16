@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SwiftFormat
+        run: brew install swiftformat
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: SwiftFormat
+        run: swiftformat --lint Sources Tests ExampleApp/ExampleApp --config .swiftformat
+
+      - name: SwiftLint
+        run: swiftlint lint --strict --config .swiftlint.yml
+
+  test:
+    name: Test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build SDK
+        run: |
+          xcodebuild build -scheme RoundsImageKit \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            | xcpretty || true
+
+      - name: Run SDK Tests
+        run: |
+          set -o pipefail
+          xcodebuild test -scheme RoundsImageKit \
+            -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+            | xcpretty

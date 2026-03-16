@@ -2,5 +2,13 @@
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": false,
     "frontend-design@claude-plugins-official": false
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "if echo \"$CLAUDE_FILE_PATH\" | grep -q '\\.swift$'; then swiftformat \"$CLAUDE_FILE_PATH\" --config .swiftformat 2>/dev/null; fi"
+      }
+    ]
   }
 }
