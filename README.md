@@ -181,7 +181,7 @@ The included **ExampleApp** demonstrates both SwiftUI and UIKit integration with
 |---------|-------------|-----------|
 | **Image Grid** | `LazyVGrid` + `CachedAsyncImage` | `UICollectionViewCompositionalLayout` + `UICachedImageView` |
 | **Placeholder** | Photo icon + spinner | Photo icon + activity indicator |
-| **Error State** | Placeholder stays visible | Error view with retry button (app-level) |
+| **Error State** | Placeholder stays visible | Placeholder stays visible |
 | **Pull to Refresh** | `.refreshable` | `UIRefreshControl` |
 | **Cache Clear** | Toolbar button | Navigation bar button |
 | **ID Badges** | Capsule with gradient | Rounded label |
