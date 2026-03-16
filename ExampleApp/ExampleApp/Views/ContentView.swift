@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = ImageListViewModel()
+    @ObservedObject var viewModel: ImageListViewModel
 
     var body: some View {
         TabView {
@@ -32,5 +32,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(viewModel: ImageListViewModel())
 }

@@ -35,6 +35,7 @@ final class ImageListViewModel: ObservableObject {
 
     func clearCache() async {
         await ImageLoader.shared.clearCache()
+        isLoading = false
         images = []
         await fetchImages()
     }

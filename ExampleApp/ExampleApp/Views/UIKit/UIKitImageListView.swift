@@ -28,6 +28,12 @@ struct UIKitImageListRepresentable: UIViewControllerRepresentable {
         guard let vc = nav.viewControllers.first as? UIKitImageListViewController else { return }
         vc.updateImages(viewModel.images)
 
+        if let message = viewModel.errorMessage, viewModel.images.isEmpty {
+            vc.showError(message)
+        } else {
+            vc.hideError()
+        }
+
         if !viewModel.isLoading {
             vc.endRefreshing()
         }

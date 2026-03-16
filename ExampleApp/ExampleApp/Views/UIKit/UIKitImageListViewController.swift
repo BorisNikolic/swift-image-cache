@@ -9,6 +9,7 @@ import UIKit
 final class UIKitImageListViewController: UICollectionViewController {
     private let viewModel: ImageListViewModel
     private var dataSource: UICollectionViewDiffableDataSource<Int, ImageItem>!
+    private lazy var errorContainerView = makeErrorView()
 
     // MARK: - Init
 
@@ -48,6 +49,85 @@ final class UIKitImageListViewController: UICollectionViewController {
 
     func endRefreshing() {
         collectionView.refreshControl?.endRefreshing()
+    }
+
+    func showError(_ message: String) {
+        errorContainerView.isHidden = false
+        if let label = errorContainerView.viewWithTag(1001) as? UILabel {
+            label.text = message
+        }
+        collectionView.isHidden = true
+    }
+
+    func hideError() {
+        errorContainerView.isHidden = true
+        collectionView.isHidden = false
+    }
+
+    // MARK: - Error View
+
+    private func makeErrorView() -> UIView {
+        let container = UIView()
+        container.accessibilityIdentifier = Theme.AccessibilityID.errorView
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.isHidden = true
+
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = Theme.loadingSpacing
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconConfig = UIImage.SymbolConfiguration(pointSize: Theme.errorIconSize, weight: .regular)
+        let iconView = UIImageView(image: UIImage(systemName: Theme.SFSymbol.errorTriangle, withConfiguration: iconConfig))
+        iconView.tintColor = .orange
+
+        let titleLabel = UILabel()
+        titleLabel.text = Theme.Strings.errorTitle
+        titleLabel.font = .preferredFont(forTextStyle: .headline)
+        titleLabel.textAlignment = .center
+
+        let messageLabel = UILabel()
+        messageLabel.tag = 1001
+        messageLabel.font = .preferredFont(forTextStyle: .caption1)
+        messageLabel.textColor = .secondaryLabel
+        messageLabel.textAlignment = .center
+        messageLabel.numberOfLines = 0
+
+        let retryButton = UIButton(type: .system)
+        retryButton.setTitle(Theme.Strings.retryButton, for: .normal)
+        retryButton.titleLabel?.font = .preferredFont(forTextStyle: .body)
+        retryButton.backgroundColor = Theme.brandPurple
+        retryButton.setTitleColor(.white, for: .normal)
+        retryButton.layer.cornerRadius = 8
+        retryButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20)
+        retryButton.accessibilityIdentifier = Theme.AccessibilityID.retryButton
+        retryButton.accessibilityHint = Theme.Strings.retryHint
+        retryButton.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            Task { await self.viewModel.fetchImages() }
+        }, for: .touchUpInside)
+
+        stack.addArrangedSubview(iconView)
+        stack.addArrangedSubview(titleLabel)
+        stack.addArrangedSubview(messageLabel)
+        stack.addArrangedSubview(retryButton)
+
+        container.addSubview(stack)
+        view.addSubview(container)
+
+        NSLayoutConstraint.activate([
+            container.topAnchor.constraint(equalTo: view.topAnchor),
+            container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            container.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            stack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: Theme.gridPadding),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -Theme.gridPadding),
+        ])
+
+        return container
     }
 
     // MARK: - Layout
