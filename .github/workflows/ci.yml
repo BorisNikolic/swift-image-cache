@@ -24,7 +24,7 @@ jobs:
         run: brew install swiftlint
 
       - name: SwiftFormat
-        run: swiftformat --lint Sources Tests ExampleApp/ExampleApp --config .swiftformat
+        run: swiftformat Sources Tests ExampleApp/ExampleApp --config .swiftformat --lint
 
       - name: SwiftLint
         run: swiftlint lint --strict --config .swiftlint.yml
