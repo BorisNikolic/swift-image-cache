@@ -9,6 +9,7 @@ final class ExampleAppUITests: XCTestCase {
     @MainActor
     private func launchApp() -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchArguments.append("--uitesting")
         app.launch()
         return app
     }

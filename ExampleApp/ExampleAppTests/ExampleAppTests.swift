@@ -7,6 +7,7 @@ import Foundation
 import Testing
 @testable import ExampleApp
 
+@MainActor
 struct ImageItemTests {
     @Test func test_decodingFromJSON() throws {
         let json = """
