@@ -355,7 +355,7 @@ Notable choices and why they were made:
 | **Synchronous `cachedImage(for:)`** | `NSCache` is thread-safe, so we can check it directly in SwiftUI's `body` without an actor hop. This eliminates the async overhead that caused placeholder flashes when `LazyVGrid` recycled cells. |
 | **Image downsampling before memory cache** | Full-resolution 1920x1080 images cost ~12MB decoded each. Thumbnailing to screen dimensions before `NSCache` storage reduces this to ~1-2MB, so all 50 images fit in the 200MB memory budget. Disk cache keeps original bytes. |
 | **`nonisolated performFetch()`** in ViewModel | The ViewModel is `@MainActor`, so `fetchImages()` would decode the ~1MB JSON response on the main thread. The `nonisolated` helper hops off main for the network + decode work. |
-| **Periodic sweep** (not per-store scan) | Scanning all `.meta` files on every `store()` is O(n). Instead, `currentSize` is tracked in memory (cheap integer comparison), and full filesystem sweeps only run on init and when over the size limit. |
+| **In-memory size tracking** | `currentSize` is tracked as an integer in memory. Full filesystem sweeps only run on init and when over the size limit — keeping store operations lightweight. |
 
 ---
 
