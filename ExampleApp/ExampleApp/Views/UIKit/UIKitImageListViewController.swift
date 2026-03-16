@@ -95,13 +95,13 @@ final class UIKitImageListViewController: UICollectionViewController {
         messageLabel.textAlignment = .center
         messageLabel.numberOfLines = 0
 
-        let retryButton = UIButton(type: .system)
-        retryButton.setTitle(Theme.Strings.retryButton, for: .normal)
-        retryButton.titleLabel?.font = .preferredFont(forTextStyle: .body)
-        retryButton.backgroundColor = Theme.brandPurple
-        retryButton.setTitleColor(.white, for: .normal)
-        retryButton.layer.cornerRadius = 8
-        retryButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20)
+        var buttonConfig = UIButton.Configuration.filled()
+        buttonConfig.title = Theme.Strings.retryButton
+        buttonConfig.baseBackgroundColor = Theme.brandPurple
+        buttonConfig.baseForegroundColor = .white
+        buttonConfig.cornerStyle = .medium
+        buttonConfig.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20)
+        let retryButton = UIButton(configuration: buttonConfig)
         retryButton.accessibilityIdentifier = Theme.AccessibilityID.retryButton
         retryButton.accessibilityHint = Theme.Strings.retryHint
         retryButton.addAction(UIAction { [weak self] _ in
