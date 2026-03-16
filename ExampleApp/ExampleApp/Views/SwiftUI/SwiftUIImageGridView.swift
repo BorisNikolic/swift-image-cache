@@ -113,8 +113,8 @@ private struct ImageCell: View {
     let item: ImageItem
 
     var body: some View {
-        CachedAsyncImage(url: item.url) {
-            placeholderView
+        CachedAsyncImage(url: item.url) { isLoading in
+            placeholderView(isLoading: isLoading)
         }
         .aspectRatio(Theme.cellAspectRatio, contentMode: .fill)
         .frame(minHeight: Theme.cellMinHeight)
@@ -137,15 +137,17 @@ private struct ImageCell: View {
         .accessibilityAddTraits(.isImage)
     }
 
-    private var placeholderView: some View {
+    private func placeholderView(isLoading: Bool) -> some View {
         Color(.tertiarySystemFill)
             .overlay {
                 ZStack {
                     Image(systemName: Theme.SFSymbol.photoPlaceholder)
                         .font(.system(size: Theme.placeholderIconSize))
                         .foregroundStyle(Color(.quaternaryLabel))
-                    ProgressView()
-                        .tint(Color(.quaternaryLabel))
+                    if isLoading {
+                        ProgressView()
+                            .tint(Color(.quaternaryLabel))
+                    }
                 }
             }
     }

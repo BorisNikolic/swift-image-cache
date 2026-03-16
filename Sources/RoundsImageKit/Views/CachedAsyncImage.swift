@@ -8,18 +8,22 @@ import SwiftUI
 /// A SwiftUI view that asynchronously loads and caches an image from a URL.
 ///
 /// Displays a placeholder while the image is loading or if loading fails.
-/// Uses `ImageLoader` for two-tier caching (memory + disk).
+/// The placeholder receives a `Bool` indicating whether loading is in progress,
+/// so it can conditionally show a spinner.
 ///
 /// ## Usage
 /// ```swift
-/// CachedAsyncImage(url: imageURL) {
-///     Image(systemName: "photo")
+/// CachedAsyncImage(url: imageURL) { isLoading in
+///     ZStack {
+///         Image(systemName: "photo")
+///         if isLoading { ProgressView() }
+///     }
 /// }
 /// ```
 public struct CachedAsyncImage<Placeholder: View>: View {
     private let url: URL?
     private let imageLoader: ImageLoader
-    private let placeholder: Placeholder
+    private let makePlaceholder: (Bool) -> Placeholder
 
     @State private var image: UIImage?
     @State private var isLoading = false
@@ -29,15 +33,16 @@ public struct CachedAsyncImage<Placeholder: View>: View {
     /// - Parameters:
     ///   - url: The URL of the image to load.
     ///   - imageLoader: The image loader to use. Defaults to `.shared`.
-    ///   - placeholder: A view to display while the image is loading or on failure.
+    ///   - placeholder: A view builder that receives `isLoading` — `true` while
+    ///     the image is being fetched, `false` when loading finished (success or failure).
     public init(
         url: URL?,
         imageLoader: ImageLoader = .shared,
-        @ViewBuilder placeholder: () -> Placeholder
+        @ViewBuilder placeholder: @escaping (Bool) -> Placeholder
     ) {
         self.url = url
         self.imageLoader = imageLoader
-        self.placeholder = placeholder()
+        makePlaceholder = placeholder
     }
 
     public var body: some View {
@@ -48,7 +53,7 @@ public struct CachedAsyncImage<Placeholder: View>: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: geometry.size.width, height: geometry.size.height)
             } else {
-                placeholder
+                makePlaceholder(isLoading)
                     .frame(width: geometry.size.width, height: geometry.size.height)
             }
         }
@@ -86,7 +91,7 @@ public struct CachedAsyncImage<Placeholder: View>: View {
                 image = loaded
             }
         } catch {
-            // On failure: placeholder stays visible (no error icon)
+            // On failure: placeholder stays visible
         }
 
         isLoading = false
@@ -98,7 +103,7 @@ public struct CachedAsyncImage<Placeholder: View>: View {
 public extension CachedAsyncImage where Placeholder == ProgressView<EmptyView, EmptyView> {
     /// Creates a cached async image with a default `ProgressView` placeholder.
     init(url: URL?, imageLoader: ImageLoader = .shared) {
-        self.init(url: url, imageLoader: imageLoader) {
+        self.init(url: url, imageLoader: imageLoader) { _ in
             ProgressView()
         }
     }
