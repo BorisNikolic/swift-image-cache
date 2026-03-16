@@ -17,8 +17,10 @@ public enum ImageLoadingError: Error, Sendable {
 ///
 /// When multiple callers request the same URL concurrently, only one network
 /// request is made. All callers await the same in-flight task.
-/// Uses `Task.detached` so that one caller's cancellation does not cancel the
-/// shared download for all other callers.
+///
+/// Uses `Task.detached` so caller cancellation (e.g. a cell scrolling off-screen)
+/// does not kill the shared download. The in-flight task map is only cleaned up
+/// when the download itself completes — not when individual callers cancel.
 public actor ImageDownloader: ImageDownloading {
     private let session: URLSession
     private var inFlightTasks: [URL: Task<(UIImage, Data), Error>] = [:]
@@ -55,13 +57,17 @@ public actor ImageDownloader: ImageDownloading {
 
         inFlightTasks[url] = task
 
-        do {
-            let result = try await task.value
-            inFlightTasks[url] = nil
-            return result
-        } catch {
-            inFlightTasks[url] = nil
-            throw error
+        // Detached so it doesn't inherit the caller's cancellation state.
+        // Cleans up the map only when the download itself finishes.
+        Task.detached { [weak self] in
+            _ = try? await task.value
+            await self?.removeInFlight(for: url)
         }
+
+        return try await task.value
+    }
+
+    private func removeInFlight(for url: URL) {
+        inFlightTasks[url] = nil
     }
 }
