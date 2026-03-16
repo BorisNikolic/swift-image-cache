@@ -18,15 +18,13 @@ struct DiskCacheTests {
         cache = DiskCache(cacheDirectory: tempDirectory, ttl: 3600)
     }
 
-    // Cleanup handled via unique directory per test instance
-
     @Test func test_storeAndRetrieve() async {
         // Given
         let url = URL(string: "https://example.com/image.png")!
-        let image = TestHelpers.createTestImage()
+        let data = TestHelpers.createTestImageData()
 
         // When
-        await cache.store(image, for: url)
+        await cache.store(data, for: url)
         let retrieved = await cache.image(for: url)
 
         // Then
@@ -53,8 +51,8 @@ struct DiskCacheTests {
     @Test func test_removeSpecificImage() async {
         // Given
         let url = URL(string: "https://example.com/image.png")!
-        let image = TestHelpers.createTestImage()
-        await cache.store(image, for: url)
+        let data = TestHelpers.createTestImageData()
+        await cache.store(data, for: url)
 
         // When
         await cache.remove(for: url)
@@ -71,9 +69,9 @@ struct DiskCacheTests {
         // Given
         let url1 = URL(string: "https://example.com/1.png")!
         let url2 = URL(string: "https://example.com/2.png")!
-        let image = TestHelpers.createTestImage()
-        await cache.store(image, for: url1)
-        await cache.store(image, for: url2)
+        let data = TestHelpers.createTestImageData()
+        await cache.store(data, for: url1)
+        await cache.store(data, for: url2)
 
         // When
         await cache.clearAll()
@@ -90,10 +88,10 @@ struct DiskCacheTests {
         // Given — TTL of 0 means everything expires immediately
         let expiredCache = DiskCache(cacheDirectory: tempDirectory, ttl: 0)
         let url = URL(string: "https://example.com/expired.png")!
-        let image = TestHelpers.createTestImage()
+        let data = TestHelpers.createTestImageData()
 
         // When
-        await expiredCache.store(image, for: url)
+        await expiredCache.store(data, for: url)
         let result = await expiredCache.image(for: url)
 
         // Then
@@ -107,10 +105,10 @@ struct DiskCacheTests {
         // Given — TTL of 3600 seconds
         let longLivedCache = DiskCache(cacheDirectory: tempDirectory, ttl: 3600)
         let url = URL(string: "https://example.com/valid.png")!
-        let image = TestHelpers.createTestImage()
+        let data = TestHelpers.createTestImageData()
 
         // When
-        await longLivedCache.store(image, for: url)
+        await longLivedCache.store(data, for: url)
         let result = await longLivedCache.image(for: url)
 
         // Then

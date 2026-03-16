@@ -8,14 +8,14 @@ import UIKit
 
 /// Persistent disk-based image cache with configurable TTL.
 ///
-/// Images are stored as JPEG files in the app's Caches directory.
-/// Each image has an associated `.meta` file tracking its creation timestamp.
+/// Stores raw image data bytes directly — no re-encoding.
+/// This preserves the original format (PNG, JPEG, WebP, etc.)
+/// following the same approach as Kingfisher, Nuke, and SDWebImage.
 /// Default TTL is 4 hours — images older than this are treated as expired.
 public final class DiskCache: ImageCaching, @unchecked Sendable {
     private let cacheDirectory: URL
     private let fileManager = FileManager.default
     private let ttl: TimeInterval
-    private let queue = DispatchQueue(label: "com.roundsimagekit.diskcache", attributes: .concurrent)
 
     /// Creates a disk cache.
     /// - Parameters:
@@ -51,15 +51,14 @@ public final class DiskCache: ImageCaching, @unchecked Sendable {
             }
         }
 
-        return UIImage(contentsOfFile: imagePath.path)
+        guard let data = try? Data(contentsOf: imagePath) else { return nil }
+        return UIImage(data: data)
     }
 
-    public func store(_ image: UIImage, for url: URL) async {
+    public func store(_ data: Data, for url: URL) async {
         let key = cacheKey(for: url)
         let imagePath = imagePath(for: key)
         let metaPath = metaPath(for: key)
-
-        guard let data = image.jpegData(compressionQuality: 0.9) else { return }
 
         do {
             try data.write(to: imagePath, options: .atomic)
@@ -71,7 +70,7 @@ public final class DiskCache: ImageCaching, @unchecked Sendable {
             let metaData = try JSONEncoder().encode(entry)
             try metaData.write(to: metaPath, options: .atomic)
         } catch {
-            // Silently fail — cache write failures are non-critical
+            // Cache write failures are non-critical
         }
     }
 
@@ -94,7 +93,7 @@ public final class DiskCache: ImageCaching, @unchecked Sendable {
     }
 
     private func imagePath(for key: String) -> URL {
-        cacheDirectory.appendingPathComponent(key + ".jpg")
+        cacheDirectory.appendingPathComponent(key)
     }
 
     private func metaPath(for key: String) -> URL {

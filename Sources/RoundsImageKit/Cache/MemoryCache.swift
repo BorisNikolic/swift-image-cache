@@ -21,9 +21,9 @@ public final class MemoryCache: ImageCaching, @unchecked Sendable {
         cache.object(forKey: url.absoluteString as NSString)
     }
 
-    public func store(_ image: UIImage, for url: URL) async {
-        let cost = image.jpegData(compressionQuality: 1.0)?.count ?? 0
-        cache.setObject(image, forKey: url.absoluteString as NSString, cost: cost)
+    public func store(_ data: Data, for url: URL) async {
+        guard let image = UIImage(data: data) else { return }
+        cache.setObject(image, forKey: url.absoluteString as NSString, cost: data.count)
     }
 
     public func remove(for url: URL) async {

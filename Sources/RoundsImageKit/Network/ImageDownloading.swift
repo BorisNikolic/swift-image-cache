@@ -7,12 +7,12 @@ import UIKit
 
 /// Abstraction for downloading images from a remote URL.
 ///
-/// Conforming types handle the network layer, allowing the `ImageLoader`
-/// to remain decoupled from `URLSession` specifics (Dependency Inversion Principle).
+/// Returns both the decoded `UIImage` and the raw `Data` bytes,
+/// so the cache layer can store original data without re-encoding.
 public protocol ImageDownloading: Sendable {
     /// Downloads an image from the specified URL.
     /// - Parameter url: The remote image URL.
-    /// - Returns: The downloaded `UIImage`.
+    /// - Returns: A tuple of the decoded `UIImage` and the original response `Data`.
     /// - Throws: `ImageLoadingError` if the download or decoding fails.
-    func download(from url: URL) async throws -> UIImage
+    func download(from url: URL) async throws -> (UIImage, Data)
 }

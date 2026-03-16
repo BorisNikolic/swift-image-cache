@@ -7,12 +7,12 @@ import UIKit
 @testable import RoundsImageKit
 
 final class MockImageDownloader: ImageDownloading, @unchecked Sendable {
-    var resultToReturn: Result<UIImage, Error> = .success(UIImage())
+    var resultToReturn: Result<(UIImage, Data), Error> = .success((UIImage(), Data()))
     private(set) var downloadCallCount = 0
     private(set) var downloadedURLs: [URL] = []
     var delayNanoseconds: UInt64?
 
-    func download(from url: URL) async throws -> UIImage {
+    func download(from url: URL) async throws -> (UIImage, Data) {
         downloadCallCount += 1
         downloadedURLs.append(url)
 

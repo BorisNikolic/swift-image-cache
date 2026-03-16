@@ -20,18 +20,18 @@ public enum ImageLoadingError: Error, Sendable {
 /// request is made. All callers await the same in-flight task.
 public actor ImageDownloader: ImageDownloading {
     private let session: URLSession
-    private var inFlightTasks: [URL: Task<UIImage, Error>] = [:]
+    private var inFlightTasks: [URL: Task<(UIImage, Data), Error>] = [:]
 
     public init(session: URLSession = .shared) {
         self.session = session
     }
 
-    public func download(from url: URL) async throws -> UIImage {
+    public func download(from url: URL) async throws -> (UIImage, Data) {
         if let existingTask = inFlightTasks[url] {
             return try await existingTask.value
         }
 
-        let task = Task<UIImage, Error> {
+        let task = Task<(UIImage, Data), Error> {
             defer { inFlightTasks[url] = nil }
 
             let (data, response): (Data, URLResponse)
@@ -50,7 +50,7 @@ public actor ImageDownloader: ImageDownloading {
                 throw ImageLoadingError.invalidImageData
             }
 
-            return image
+            return (image, data)
         }
 
         inFlightTasks[url] = task

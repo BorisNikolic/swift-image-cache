@@ -18,8 +18,7 @@ struct ImageDownloaderTests {
     @Test func test_successfulDownload() async throws {
         // Given
         let url = URL(string: "https://example.com/image.png")!
-        let testImage = TestHelpers.createTestImage()
-        let imageData = testImage.jpegData(compressionQuality: 1.0)!
+        let imageData = TestHelpers.createTestImageData()
 
         MockURLProtocol.requestHandler = { request in
             let response = HTTPURLResponse(
@@ -34,10 +33,11 @@ struct ImageDownloaderTests {
         let downloader = ImageDownloader(session: makeSession())
 
         // When
-        let result = try await downloader.download(from: url)
+        let (image, data) = try await downloader.download(from: url)
 
         // Then
-        #expect(result.size.width > 0)
+        #expect(image.size.width > 0)
+        #expect(!data.isEmpty)
     }
 
     @Test func test_invalidImageDataThrowsError() async {

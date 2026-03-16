@@ -14,10 +14,10 @@ struct MemoryCacheTests {
     @Test func test_storeAndRetrieve() async {
         // Given
         let url = URL(string: "https://example.com/image.png")!
-        let image = TestHelpers.createTestImage()
+        let data = TestHelpers.createTestImageData()
 
         // When
-        await cache.store(image, for: url)
+        await cache.store(data, for: url)
         let retrieved = await cache.image(for: url)
 
         // Then
@@ -38,8 +38,8 @@ struct MemoryCacheTests {
     @Test func test_removeSpecificImage() async {
         // Given
         let url = URL(string: "https://example.com/image.png")!
-        let image = TestHelpers.createTestImage()
-        await cache.store(image, for: url)
+        let data = TestHelpers.createTestImageData()
+        await cache.store(data, for: url)
 
         // When
         await cache.remove(for: url)
@@ -53,9 +53,9 @@ struct MemoryCacheTests {
         // Given
         let url1 = URL(string: "https://example.com/1.png")!
         let url2 = URL(string: "https://example.com/2.png")!
-        let image = TestHelpers.createTestImage()
-        await cache.store(image, for: url1)
-        await cache.store(image, for: url2)
+        let data = TestHelpers.createTestImageData()
+        await cache.store(data, for: url1)
+        await cache.store(data, for: url2)
 
         // When
         await cache.clearAll()
@@ -69,12 +69,12 @@ struct MemoryCacheTests {
         // Given
         let url1 = URL(string: "https://example.com/red.png")!
         let url2 = URL(string: "https://example.com/blue.png")!
-        let redImage = TestHelpers.createTestImage(color: .red)
-        let blueImage = TestHelpers.createTestImage(color: .blue)
+        let redData = TestHelpers.createTestImageData(color: .red)
+        let blueData = TestHelpers.createTestImageData(color: .blue)
 
         // When
-        await cache.store(redImage, for: url1)
-        await cache.store(blueImage, for: url2)
+        await cache.store(redData, for: url1)
+        await cache.store(blueData, for: url2)
 
         // Then
         let retrieved1 = await cache.image(for: url1)

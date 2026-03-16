@@ -21,7 +21,8 @@ struct ImageLoaderTests {
         // Given
         let url = URL(string: "https://example.com/image.png")!
         let testImage = TestHelpers.createTestImage()
-        downloader.resultToReturn = .success(testImage)
+        let testData = TestHelpers.createTestImageData()
+        downloader.resultToReturn = .success((testImage, testData))
 
         // When
         let result = try await loader.image(for: url)
@@ -37,8 +38,8 @@ struct ImageLoaderTests {
     @Test func test_loadFromMemoryCache_whenAvailable() async throws {
         // Given
         let url = URL(string: "https://example.com/cached.png")!
-        let testImage = TestHelpers.createTestImage()
-        memoryCache.storedImages[url] = testImage
+        let testData = TestHelpers.createTestImageData()
+        memoryCache.storedData[url] = testData
 
         // When
         let result = try await loader.image(for: url)
@@ -52,8 +53,8 @@ struct ImageLoaderTests {
     @Test func test_loadFromDiskCache_whenMemoryEmpty() async throws {
         // Given
         let url = URL(string: "https://example.com/disk.png")!
-        let testImage = TestHelpers.createTestImage()
-        diskCache.storedImages[url] = testImage
+        let testData = TestHelpers.createTestImageData()
+        diskCache.storedData[url] = testData
 
         // When
         let result = try await loader.image(for: url)
@@ -67,9 +68,9 @@ struct ImageLoaderTests {
     @Test func test_clearCache_removesAllImages() async {
         // Given
         let url = URL(string: "https://example.com/image.png")!
-        let testImage = TestHelpers.createTestImage()
-        memoryCache.storedImages[url] = testImage
-        diskCache.storedImages[url] = testImage
+        let testData = TestHelpers.createTestImageData()
+        memoryCache.storedData[url] = testData
+        diskCache.storedData[url] = testData
 
         // When
         await loader.clearCache()
@@ -82,9 +83,9 @@ struct ImageLoaderTests {
     @Test func test_removeCachedImage_removesSpecific() async {
         // Given
         let url = URL(string: "https://example.com/remove.png")!
-        let testImage = TestHelpers.createTestImage()
-        memoryCache.storedImages[url] = testImage
-        diskCache.storedImages[url] = testImage
+        let testData = TestHelpers.createTestImageData()
+        memoryCache.storedData[url] = testData
+        diskCache.storedData[url] = testData
 
         // When
         await loader.removeCachedImage(for: url)
@@ -92,7 +93,7 @@ struct ImageLoaderTests {
         // Then
         #expect(memoryCache.removeCallCount == 1)
         #expect(diskCache.removeCallCount == 1)
-        #expect(memoryCache.storedImages[url] == nil)
-        #expect(diskCache.storedImages[url] == nil)
+        #expect(memoryCache.storedData[url] == nil)
+        #expect(diskCache.storedData[url] == nil)
     }
 }

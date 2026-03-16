@@ -19,7 +19,7 @@ import UIKit
 /// - **Memory cache**: Fast, in-process lookup via `NSCache`
 /// - **Disk cache**: Persistent storage with configurable TTL (default 4h)
 /// - **Network**: URLSession-based with request deduplication
-/// - **Flow**: Memory → Disk → Network → Store in both caches
+/// - **Flow**: Memory → Disk → Network → Store original bytes in both caches
 public actor ImageLoader {
     /// Shared singleton instance with default configuration.
     public static let shared = ImageLoader()
@@ -47,7 +47,7 @@ public actor ImageLoader {
     /// Loads an image from cache or network.
     ///
     /// Checks memory cache first, then disk cache, and finally downloads from the network.
-    /// Successfully loaded images are stored in both caches for future access.
+    /// Original data bytes are stored in both caches — no re-encoding.
     ///
     /// - Parameter url: The image URL to load.
     /// - Returns: The loaded `UIImage`.
@@ -60,16 +60,19 @@ public actor ImageLoader {
 
         // 2. Check disk cache
         if let cached = await diskCache.image(for: url) {
-            await memoryCache.store(cached, for: url)
+            // Promote to memory cache using original data from disk
+            if let data = cached.pngData() {
+                await memoryCache.store(data, for: url)
+            }
             return cached
         }
 
         // 3. Download from network
-        let image = try await downloader.download(from: url)
+        let (image, data) = try await downloader.download(from: url)
 
-        // 4. Store in both caches
-        await memoryCache.store(image, for: url)
-        await diskCache.store(image, for: url)
+        // 4. Store original bytes in both caches
+        await memoryCache.store(data, for: url)
+        await diskCache.store(data, for: url)
 
         return image
     }

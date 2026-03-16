@@ -30,6 +30,7 @@ public final class UICachedImageView: UIView {
         didSet {
             if imageView.image == nil || imageView.image == oldValue {
                 imageView.image = placeholder
+                imageView.contentMode = .center
             }
         }
     }
@@ -77,6 +78,7 @@ public final class UICachedImageView: UIView {
         currentURL = url
 
         imageView.image = placeholder
+        imageView.contentMode = .center
         activityIndicator.startAnimating()
 
         currentTask = Task { [weak self] in
@@ -87,6 +89,7 @@ public final class UICachedImageView: UIView {
                 guard !Task.isCancelled else { return }
 
                 await MainActor.run {
+                    self.imageView.contentMode = self.imageContentMode
                     UIView.transition(
                         with: self.imageView,
                         duration: 0.2,
@@ -119,6 +122,7 @@ public final class UICachedImageView: UIView {
     public func prepareForReuse() {
         cancelLoading()
         imageView.image = placeholder
+        imageView.contentMode = .center
     }
 
     // MARK: - Layout

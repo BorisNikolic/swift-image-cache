@@ -12,4 +12,8 @@ enum TestHelpers {
             ctx.fill(CGRect(origin: .zero, size: size))
         }
     }
+
+    static func createTestImageData(color: UIColor = .red, size: CGSize = CGSize(width: 1, height: 1)) -> Data {
+        createTestImage(color: color, size: size).pngData()!
+    }
 }
