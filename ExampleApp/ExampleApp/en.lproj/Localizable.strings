@@ -1,0 +1,35 @@
+/* Main navigation title */
+"app.title" = "RoundsImageKit";
+
+/* SwiftUI tab title */
+"tab.swiftui" = "SwiftUI";
+
+/* UIKit tab title */
+"tab.uikit" = "UIKit";
+
+/* Clear cache button title */
+"action.clearCache" = "Clear Cache";
+
+/* Loading indicator text */
+"loading.images" = "Loading images...";
+
+/* Error state title */
+"error.title" = "Something went wrong";
+
+/* Retry button title */
+"action.retry" = "Retry";
+
+/* Image ID badge label */
+"image.badge" = "#%d";
+
+/* Accessibility label for image cell */
+"accessibility.imageLabel" = "Image %d";
+
+/* Accessibility hint for clear cache button */
+"accessibility.clearCacheHint" = "Clears the image cache and reloads all images";
+
+/* Accessibility hint for retry button */
+"accessibility.retryHint" = "Retries loading images";
+
+/* Accessibility hint for image cell */
+"accessibility.imageHint" = "Photo from the image gallery";
