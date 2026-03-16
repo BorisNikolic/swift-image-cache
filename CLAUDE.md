@@ -7,7 +7,6 @@ Lightweight image downloading and caching library for iOS, with an example app d
 ```
 rounds/
 ├── Package.swift                     # SPM manifest (swift-tools-version: 6.0)
-├── RoundsImageKit.podspec            # CocoaPods spec (v1.0.0)
 ├── Sources/RoundsImageKit/           # SDK source code
 │   ├── Cache/                        # ImageCaching protocol, MemoryCache, DiskCache
 │   ├── Network/                      # ImageDownloading protocol, ImageDownloader

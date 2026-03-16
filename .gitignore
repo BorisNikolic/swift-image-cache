@@ -49,9 +49,6 @@ Package.swift.orig
 Package.resolved
 .swiftpm
 
-# CocoaPods
-Pods/
-
 # fastlane
 fastlane/test_output
 fastlane/README.md

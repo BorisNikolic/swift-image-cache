@@ -5,7 +5,6 @@
 [![Swift 6.0](https://img.shields.io/badge/Swift-6.0-orange.svg)](https://swift.org)
 [![iOS 15+](https://img.shields.io/badge/iOS-15%2B-blue.svg)](https://developer.apple.com/ios/)
 [![SPM Compatible](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg)](https://swift.org/package-manager/)
-[![CocoaPods](https://img.shields.io/badge/CocoaPods-Compatible-red.svg)](https://cocoapods.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -37,12 +36,6 @@ dependencies: [
 ```
 
 Or in Xcode: **File → Add Package Dependencies** → paste the repository URL.
-
-### CocoaPods
-
-```ruby
-pod 'RoundsImageKit', '~> 1.0'
-```
 
 ---
 
@@ -215,7 +208,6 @@ make lint
 ```
 rounds/
 ├── 📦 Package.swift              # SPM manifest
-├── 📦 RoundsImageKit.podspec     # CocoaPods spec
 ├── 📁 Sources/RoundsImageKit/    # SDK source code
 │   ├── Cache/                    # MemoryCache, DiskCache, ImageCaching protocol
 │   ├── Network/                  # ImageDownloader, ImageDownloading protocol
