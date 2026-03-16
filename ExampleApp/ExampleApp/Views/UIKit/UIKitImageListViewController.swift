@@ -34,6 +34,7 @@ final class UIKitImageListViewController: UICollectionViewController {
         configureNavBar()
         configureDataSource()
         configureRefreshControl()
+        collectionView.prefetchDataSource = self
         updateImages(viewModel.images)
     }
 
@@ -295,6 +296,18 @@ private final class PaddedLabel: UILabel {
     override var intrinsicContentSize: CGSize {
         let size = super.intrinsicContentSize
         return CGSize(width: size.width + Theme.paddedLabelExtraWidth, height: size.height)
+    }
+}
+
+// MARK: - Prefetching
+
+extension UIKitImageListViewController: UICollectionViewDataSourcePrefetching {
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        for indexPath in indexPaths {
+            guard let item = dataSource.itemIdentifier(for: indexPath),
+                  let url = item.url else { continue }
+            Task { _ = try? await ImageLoader.shared.image(for: url) }
+        }
     }
 }
 

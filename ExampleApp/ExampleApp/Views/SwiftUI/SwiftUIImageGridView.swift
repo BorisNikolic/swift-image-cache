@@ -140,13 +140,9 @@ private struct ImageCell: View {
     private var placeholderView: some View {
         Color(.tertiarySystemFill)
             .overlay {
-                VStack(spacing: Theme.badgePadding) {
-                    Image(systemName: Theme.SFSymbol.photoPlaceholder)
-                        .font(.system(size: Theme.placeholderIconSize))
-                        .foregroundStyle(Color(.quaternaryLabel))
-                    ProgressView()
-                        .tint(Color(.quaternaryLabel))
-                }
+                Image(systemName: Theme.SFSymbol.photoPlaceholder)
+                    .font(.system(size: Theme.placeholderIconSize))
+                    .foregroundStyle(Color(.quaternaryLabel))
             }
     }
 
