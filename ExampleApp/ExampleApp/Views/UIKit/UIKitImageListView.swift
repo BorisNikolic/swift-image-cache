@@ -10,7 +10,7 @@ struct UIKitImageListView: View {
 
     var body: some View {
         UIKitImageListRepresentable(viewModel: viewModel)
-            .ignoresSafeArea(edges: .bottom)
+            .ignoresSafeArea()
     }
 }
 

@@ -118,14 +118,13 @@ private struct ImageCell: View {
         }
         .aspectRatio(Theme.cellAspectRatio, contentMode: .fill)
         .frame(minHeight: Theme.cellMinHeight)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
         .overlay(alignment: .bottom) {
             gradientOverlay
         }
         .overlay(alignment: .bottomLeading) {
             idBadge
         }
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
         .overlay(
             RoundedRectangle(cornerRadius: Theme.cornerRadius)
                 .stroke(Color.black.opacity(Theme.borderOpacity), lineWidth: Theme.borderWidth)
@@ -139,12 +138,15 @@ private struct ImageCell: View {
     }
 
     private var placeholderView: some View {
-        RoundedRectangle(cornerRadius: Theme.cornerRadius)
-            .fill(Color(.tertiarySystemFill))
+        Color(.tertiarySystemFill)
             .overlay {
-                Image(systemName: Theme.SFSymbol.photoPlaceholder)
-                    .font(.system(size: Theme.placeholderIconSize))
-                    .foregroundStyle(Color(.quaternaryLabel))
+                VStack(spacing: Theme.badgePadding) {
+                    Image(systemName: Theme.SFSymbol.photoPlaceholder)
+                        .font(.system(size: Theme.placeholderIconSize))
+                        .foregroundStyle(Color(.quaternaryLabel))
+                    ProgressView()
+                        .tint(Color(.quaternaryLabel))
+                }
             }
     }
 

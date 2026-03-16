@@ -153,7 +153,7 @@ final class UIKitImageListViewController: UICollectionViewController {
 
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = NSDirectionalEdgeInsets(
-            top: Theme.sectionInset,
+            top: Theme.sectionInset / 2,
             leading: Theme.sectionInset,
             bottom: Theme.sectionInset,
             trailing: Theme.sectionInset
