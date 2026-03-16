@@ -167,7 +167,11 @@ private final class ImageCell: UICollectionViewCell {
         layer.borderColor = UIColor.black.withAlphaComponent(Theme.borderOpacity).cgColor
 
         cachedImageView.imageContentMode = .scaleAspectFill
-        cachedImageView.placeholder = UIImage(systemName: Theme.SFSymbol.photoPlaceholder)
+        let symbolConfig = UIImage.SymbolConfiguration(pointSize: Theme.placeholderIconSize, weight: .regular)
+        cachedImageView.placeholder = UIImage(
+            systemName: Theme.SFSymbol.photoPlaceholder,
+            withConfiguration: symbolConfig
+        )?.withTintColor(.quaternaryLabel, renderingMode: .alwaysOriginal)
         cachedImageView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(cachedImageView)
 

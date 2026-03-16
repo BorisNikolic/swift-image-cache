@@ -125,6 +125,9 @@ private struct ImageCell: View {
         .frame(minHeight: Theme.cellMinHeight)
         .clipped()
         .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
+        .overlay(alignment: .bottom) {
+            gradientOverlay
+        }
         .overlay(alignment: .bottomLeading) {
             idBadge
         }
@@ -148,6 +151,16 @@ private struct ImageCell: View {
                     .font(.system(size: Theme.placeholderIconSize))
                     .foregroundStyle(Color(.quaternaryLabel))
             }
+    }
+
+    private var gradientOverlay: some View {
+        LinearGradient(
+            colors: [.clear, .black.opacity(Theme.gradientOpacity)],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .frame(height: Theme.cellMinHeight * Theme.gradientHeightMultiplier)
+        .allowsHitTesting(false)
     }
 
     private var idBadge: some View {
