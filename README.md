@@ -12,13 +12,18 @@
 
 ## ✨ Features
 
-- 🚀 **Async/Await** — Built with Swift concurrency (actors, async/await, Sendable)
-- 💾 **Two-Tier Caching** — In-memory (NSCache) + persistent disk cache
-- ⏰ **4-Hour TTL** — Cached images automatically expire after 4 hours
-- 🔄 **Request Deduplication** — Multiple requests for the same URL share one download
-- 🎨 **SwiftUI + UIKit** — `CachedAsyncImage` (SwiftUI) and `UICachedImageView` (UIKit)
+- 🚀 **Swift 6 Concurrency** — Actors, async/await, Sendable, `@MainActor` throughout
+- 💾 **Two-Tier Caching** — In-memory (`NSCache`) + persistent disk cache
+- 📂 **Format-Preserving Storage** — Stores original bytes (PNG, JPEG, WebP) — no re-encoding, following Kingfisher/Nuke/SDWebImage approach
+- ⏰ **4-Hour TTL** — Disk-cached images expire automatically; configurable via `ImageLoader.Configuration`
+- 🔄 **Cancellation-Safe Deduplication** — Shared downloads survive individual caller cancellation (e.g. cell reuse during scroll)
+- 🎨 **SwiftUI + UIKit** — `CachedAsyncImage` and `UICachedImageView` with identical visual behavior
+- ⚠️ **Error State Views** — Both SDK views show error indicators on load failure
 - 🧹 **Manual Cache Invalidation** — Clear all caches or remove specific images
-- 🧪 **Fully Testable** — Protocol-oriented design with dependency injection
+- ⚙️ **Configurable** — `ImageLoader.Configuration` for TTL, memory count/size limits
+- 🧪 **Fully Testable** — Split protocols (`MemoryImageCaching`, `DiskImageCaching`, `ImageDownloading`) with dependency injection
+- 🌍 **Localized** — All strings via `NSLocalizedString`, English `.strings` file included
+- ♿ **Accessible** — VoiceOver labels, hints, traits, and identifiers on all elements
 - 📦 **Zero Dependencies** — No third-party libraries required
 - 🏗️ **SOLID Architecture** — Clean, scalable, protocol-driven design
 
@@ -85,22 +90,37 @@ await ImageLoader.shared.clearCache()
 await ImageLoader.shared.removeCachedImage(for: url)
 ```
 
+### Custom Configuration
+
+```swift
+import RoundsImageKit
+
+let loader = ImageLoader(configuration: .init(
+    ttl: 2 * 60 * 60,           // 2-hour TTL
+    memoryCacheCountLimit: 50,    // max 50 images in memory
+    memoryCacheSizeLimit: 25_000_000  // 25 MB memory limit
+))
+let image = try await loader.image(for: url)
+```
+
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌──────────────────────────────────────────────┐
-│                  ImageLoader                  │
-│               (actor — main API)              │
-├──────────────┬──────────────┬────────────────┤
-│ MemoryCache  │  DiskCache   │ ImageDownloader │
-│  (NSCache)   │ (FileManager)│  (URLSession)   │
-│              │  + 4h TTL    │  + dedup        │
-├──────────────┴──────────────┴────────────────┤
-│              Protocol Layer                   │
-│    ImageCaching      ImageDownloading         │
-└──────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│                   ImageLoader                     │
+│            (actor — main public API)              │
+│         Configuration: TTL, memory limits         │
+├────────────────┬────────────┬────────────────────┤
+│  MemoryCache   │ DiskCache  │  ImageDownloader    │
+│   (NSCache)    │(FileManager)│   (URLSession)     │
+│ stores UIImage │stores Data │ Task.detached dedup │
+├────────────────┴────────────┴────────────────────┤
+│               Protocol Layer                      │
+│  MemoryImageCaching    DiskImageCaching           │
+│                   ImageDownloading                │
+└──────────────────────────────────────────────────┘
 ```
 
 ### Design Principles
@@ -110,24 +130,33 @@ await ImageLoader.shared.removeCachedImage(for: url)
 | **S** — Single Responsibility | Each class has one job (cache, download, coordinate) |
 | **O** — Open/Closed | Extend via protocols, not modification |
 | **L** — Liskov Substitution | Mocks seamlessly replace real implementations |
-| **I** — Interface Segregation | Small, focused protocols (`ImageCaching`, `ImageDownloading`) |
+| **I** — Interface Segregation | Separate protocols: `MemoryImageCaching` (UIImage), `DiskImageCaching` (Data) |
 | **D** — Dependency Inversion | `ImageLoader` depends on abstractions, not concrete types |
 
 ### Cache Flow
 
 ```
-Request → Memory Cache (hit?) → ✅ Return
+Request → Memory Cache (hit?) → ✅ Return UIImage
                   ↓ (miss)
-         Disk Cache (hit + valid TTL?) → ✅ Store in memory, Return
+         Disk Cache (hit + valid TTL?) → ✅ Promote to memory, Return
                   ↓ (miss or expired)
-         Network Download → ✅ Store in both caches, Return
+         Network Download → ✅ Store UIImage in memory, raw Data on disk, Return
+```
+
+### Cancellation-Safe Deduplication
+
+```
+Cell A requests image.png → starts Task.detached download
+Cell B requests image.png → joins existing task (no duplicate request)
+Cell A scrolls off-screen → cancels its await, download continues
+Cell B receives the image → download cleans up from map
 ```
 
 ---
 
 ## 📱 Example App
 
-The included **ExampleApp** demonstrates both SwiftUI and UIKit integration:
+The included **ExampleApp** demonstrates both SwiftUI and UIKit integration with identical visual design:
 
 ### Running the Example
 
@@ -135,20 +164,31 @@ The included **ExampleApp** demonstrates both SwiftUI and UIKit integration:
 2. The local SPM package is already linked
 3. Build and run on iOS Simulator (iOS 15+)
 
-### What it shows
+### What It Demonstrates
 
-| SwiftUI Tab | UIKit Tab |
-|-------------|-----------|
-| `LazyVGrid` with `CachedAsyncImage` | `UICollectionView` with `UICachedImageView` |
-| Pull-to-refresh | `UIRefreshControl` |
-| Toolbar cache clear button | Navigation bar cache clear button |
-| Gradient ID badges | ID label overlays |
+| Feature | SwiftUI Tab | UIKit Tab |
+|---------|-------------|-----------|
+| **Image Grid** | `LazyVGrid` + `CachedAsyncImage` | `UICollectionViewCompositionalLayout` + `UICachedImageView` |
+| **Placeholder** | Photo icon + spinner | Photo icon + activity indicator |
+| **Error State** | Error triangle icon | Error view with retry button |
+| **Pull to Refresh** | `.refreshable` | `UIRefreshControl` |
+| **Cache Clear** | Toolbar button | Navigation bar button |
+| **ID Badges** | Capsule with gradient | Rounded label |
+| **Accessibility** | VoiceOver labels, hints, traits | `isAccessibilityElement`, labels, hints |
+| **Localization** | `NSLocalizedString` via Theme | Same strings via Theme |
+
+### App Architecture
+
+- **MVVM** with shared `ImageListViewModel` across both tabs
+- **Protocol-based service** (`ImageListFetching`) with mock injection for testing
+- **Centralized Theme** — all colors, metrics, strings, SF Symbols, and accessibility IDs
+- **`en.lproj/Localizable.strings`** for English localization
 
 ### Testing the Cache
 
-1. **Launch the app** — images load from network (watch the loading indicators)
-2. **Scroll through** — all 50 images download and cache
-3. **Kill and relaunch** — images load instantly from disk cache
+1. **Launch the app** — images load from network with placeholder spinners
+2. **Scroll through** — all 50 images download and cache (request deduplication in action)
+3. **Kill and relaunch** — images load instantly from disk cache (no spinners)
 4. **Tap the refresh icon** — clears cache, images re-download
 5. **Wait 4 hours** — cached images expire, fresh downloads on next launch
 
@@ -156,28 +196,52 @@ The included **ExampleApp** demonstrates both SwiftUI and UIKit integration:
 
 ## 🧪 Testing
 
-### Run Unit Tests
+### Run Tests
 
 ```bash
-# Via Makefile
+# SDK unit tests (via Makefile)
 make test
 
-# Via xcodebuild (iOS simulator required)
+# SDK unit tests (via xcodebuild)
 xcodebuild test -scheme RoundsImageKit \
-  -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.6'
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5'
+
+# ExampleApp unit tests
+xcodebuild test -project ExampleApp/ExampleApp.xcodeproj \
+  -scheme ExampleApp -only-testing:ExampleAppTests \
+  -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5'
 ```
 
 ### Test Coverage
 
 | Suite | Tests | What's Tested |
 |-------|-------|---------------|
+| **SDK Tests** | | |
 | `MemoryCacheTests` | 5 | Store, retrieve, remove, clear, independence |
 | `DiskCacheTests` | 6 | Store, retrieve, remove, clear, TTL expiry, valid TTL |
 | `ImageDownloaderTests` | 4 | Success, invalid data, network error, HTTP 404 |
 | `ImageLoaderTests` | 5 | Full flow, memory hit, disk hit, clear, remove |
-| **Total** | **20** | |
+| **App Tests** | | |
+| `ImageItemTests` | 5 | JSON decoding, URL parsing, empty string, identifiable, hashable |
+| `ImageListViewModelTests` | 5 | Fetch success, loading state, error, clearCache, overlap guard |
+| **Total** | **30** | |
 
-All tests use **protocol-based mocks** — no mocking frameworks.
+- All SDK tests use **protocol-based mocks** — no mocking frameworks
+- ViewModel tests use `MockImageListService` — no network calls
+- UI tests inject mock service via `--uitesting` launch argument — deterministic, no flaky network
+
+---
+
+## 🔄 CI/CD
+
+**GitHub Actions** runs on every push and PR to `main`:
+
+| Job | What it does |
+|-----|--------------|
+| **Lint** | SwiftFormat `--lint` + SwiftLint `--strict` on all Swift files |
+| **Test** | Build SDK + run 20 unit tests on iOS Simulator |
+
+CI status badge is shown at the top of this README.
 
 ---
 
@@ -187,6 +251,7 @@ All tests use **protocol-based mocks** — no mocking frameworks.
 
 - Xcode 15+ (Swift 6.0)
 - iOS 15+ Simulator
+- SwiftFormat + SwiftLint (installed via `make check-deps`)
 
 ### Setup
 
@@ -194,7 +259,7 @@ All tests use **protocol-based mocks** — no mocking frameworks.
 # Install SwiftFormat + SwiftLint
 make check-deps
 
-# Install pre-commit hooks (SwiftFormat + SwiftLint)
+# Install pre-commit hooks
 make hook
 
 # Format code
@@ -202,38 +267,66 @@ make format
 
 # Lint code
 make lint
+
+# Run SDK tests
+make test
+
+# Clean build artifacts
+make clean
 ```
 
 ### Code Quality Hooks
 
-**Git pre-commit hook** — Automatically formats and lints staged `.swift` files on every commit. Install with:
-```bash
-make hook
-```
-This runs SwiftFormat (auto-fix) and SwiftLint (strict) on staged files before they enter git history. If linting fails, the commit is blocked.
+| Hook | When | What |
+|------|------|------|
+| **Git pre-commit** | Every `git commit` | SwiftFormat auto-fix + SwiftLint strict on staged `.swift` files |
+| **Claude Code PostToolUse** | Every `.swift` file edit by Claude | Auto-formats via SwiftFormat |
+| **GitHub Actions CI** | Every push/PR to `main` | Lint + test (see CI/CD section) |
 
-**Claude Code hook** — When using [Claude Code](https://claude.ai/claude-code), every `.swift` file edit is automatically formatted via SwiftFormat. Configured in `.claude/settings.json` as a `PostToolUse` hook.
-
-**GitHub Actions CI** — Runs on every push and PR to `main`:
-- SwiftFormat lint check (no auto-fix, fails on violations)
-- SwiftLint strict mode
-- SDK unit tests on iOS Simulator
+Install the pre-commit hook with `make hook`.
 
 ### Project Structure
 
 ```
 rounds/
-├── 📦 Package.swift              # SPM manifest
-├── 📁 Sources/RoundsImageKit/    # SDK source code
-│   ├── Cache/                    # MemoryCache, DiskCache, ImageCaching protocol
-│   ├── Network/                  # ImageDownloader, ImageDownloading protocol
-│   ├── Views/                    # CachedAsyncImage, UICachedImageView
-│   └── ImageLoader.swift         # Main public API
-├── 🧪 Tests/RoundsImageKit/ # Unit tests (Swift Testing)
-├── 📱 ExampleApp/                # Demo app (SwiftUI + UIKit)
-├── 🤖 .claude/                   # Claude Code config (rules, agents, skills)
-├── 📄 CLAUDE.md                  # Project guide for AI assistance
-└── ⚙️ BuildTools/                # Pre-commit hook script
+├── 📦 Package.swift                  # SPM manifest (swift-tools-version: 6.0)
+├── 📁 Sources/RoundsImageKit/        # SDK source code
+│   ├── Cache/                        # MemoryImageCaching, DiskImageCaching protocols
+│   │   ├── MemoryCache.swift         # NSCache wrapper (stores UIImage)
+│   │   ├── DiskCache.swift           # FileManager + SHA256 + TTL (stores raw Data)
+│   │   └── CacheEntry.swift          # Codable metadata (timestamp, size)
+│   ├── Network/                      # ImageDownloading protocol
+│   │   └── ImageDownloader.swift     # URLSession + Task.detached dedup
+│   ├── Views/                        # UI components
+│   │   ├── CachedAsyncImage.swift    # SwiftUI view
+│   │   └── UICachedImageView.swift   # UIKit view
+│   └── ImageLoader.swift             # Main API (actor + Configuration)
+├── 🧪 Tests/RoundsImageKitTests/     # 20 SDK unit tests (Swift Testing)
+│   ├── Cache/                        # MemoryCache + DiskCache tests
+│   ├── Network/                      # ImageDownloader tests
+│   ├── Mocks/                        # Protocol-based mocks
+│   └── ImageLoaderTests.swift        # Integration tests
+├── 📱 ExampleApp/                    # Demo app (SwiftUI + UIKit)
+│   ├── ExampleApp/                   # App source
+│   │   ├── Theme.swift               # Centralized colors, metrics, strings, a11y IDs
+│   │   ├── Models/                   # ImageItem (Codable)
+│   │   ├── Services/                 # ImageListService + MockImageListService
+│   │   ├── ViewModels/               # ImageListViewModel (@MainActor)
+│   │   ├── Views/SwiftUI/            # SwiftUI image grid
+│   │   ├── Views/UIKit/              # UIKit collection view
+│   │   └── en.lproj/                 # English localization
+│   ├── ExampleAppTests/              # 10 unit tests (ImageItem + ViewModel)
+│   └── ExampleAppUITests/            # 8 UI tests (stubbed network)
+├── 🤖 .claude/                       # Claude Code config
+│   ├── rules/                        # Coding style, architecture, testing rules
+│   └── skills/                       # run-tests, write-tests skills
+├── ⚙️ .github/workflows/ci.yml       # GitHub Actions CI pipeline
+├── ⚙️ BuildTools/                     # Pre-commit hook script
+├── 📄 CLAUDE.md                      # Project guide for AI assistance
+├── 📄 Makefile                       # check-deps, hook, test, lint, format, clean
+├── 📄 .swiftformat                   # SwiftFormat config
+├── 📄 .swiftlint.yml                 # SwiftLint config
+└── 📄 LICENSE                        # MIT
 ```
 
 ---
