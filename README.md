@@ -251,7 +251,7 @@ xcodebuild test -project ExampleApp/ExampleApp.xcodeproj \
 | Job | What it does |
 |-----|--------------|
 | **Lint** | SwiftFormat `--lint` + SwiftLint `--strict` on all Swift files |
-| **Test** | Build SDK + run 20 unit tests on iOS Simulator |
+| **Test** | Build SDK + run 22 unit tests on iOS Simulator |
 
 CI status badge is shown at the top of this README.
 
@@ -313,7 +313,7 @@ rounds/
 │   │   ├── CachedAsyncImage.swift    # SwiftUI view
 │   │   └── UICachedImageView.swift   # UIKit view
 │   └── ImageLoader.swift             # Main API (actor + Configuration)
-├── 🧪 Tests/RoundsImageKitTests/     # 20 SDK unit tests (Swift Testing)
+├── 🧪 Tests/RoundsImageKitTests/     # 22 SDK unit tests (Swift Testing)
 │   ├── Cache/                        # MemoryCache + DiskCache tests
 │   ├── Network/                      # ImageDownloader tests
 │   ├── Mocks/                        # Protocol-based mocks
