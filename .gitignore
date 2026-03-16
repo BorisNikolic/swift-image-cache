@@ -1,0 +1,79 @@
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+default.profraw
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+## User settings
+xcuserdata/
+
+### Xcode Patch ###
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+/*.gcno
+
+## Obj-C/Swift specific
+*.hmap
+
+## App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Swift Package Manager
+.build/
+Package.swift.orig
+Package.resolved
+.swiftpm
+
+# CocoaPods
+Pods/
+
+# fastlane
+fastlane/test_output
+fastlane/README.md
+fastlane/Preview.html
+fastlane/screenshots/**
+fastlane/report.xml
+
+### Misc
+.idea
+
+# Alternative editors
+.nvim
+buildserver.json
+.avanterules
+launch.json
+.cursorrules
+
+# Node
+**/node_modules/
+
+# Claude Code plans
+.claude/plans/
+
+# Test project PDF
+iOS Developer Test Project v5.pdf
