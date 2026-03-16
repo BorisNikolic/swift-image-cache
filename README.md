@@ -56,8 +56,11 @@ struct ImageView: View {
     let url: URL
 
     var body: some View {
+        // Placeholder can be any SwiftUI view — shown while loading
         CachedAsyncImage(url: url) {
-            ProgressView()
+            Image(systemName: "photo")
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
         }
         .frame(width: 200, height: 200)
         .clipShape(RoundedRectangle(cornerRadius: 12))
