@@ -217,6 +217,7 @@ public final class DiskCache: DiskImageCaching, @unchecked Sendable {
             }
 
             currentSize = totalSize
+            scheduleSweep()
         }
     }
 

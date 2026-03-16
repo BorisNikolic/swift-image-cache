@@ -12,6 +12,10 @@ final class UIKitImageListViewController: UICollectionViewController {
     private var prefetchTasks: [IndexPath: Task<Void, Never>] = [:]
     private lazy var errorContainerView = makeErrorView()
 
+    deinit {
+        prefetchTasks.values.forEach { $0.cancel() }
+    }
+
     // MARK: - Init
 
     init(viewModel: ImageListViewModel) {
