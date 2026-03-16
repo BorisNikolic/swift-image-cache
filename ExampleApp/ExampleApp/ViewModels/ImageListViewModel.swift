@@ -25,9 +25,7 @@ final class ImageListViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            let fetched = try await Task.detached { [service] in
-                try await service.fetchImages()
-            }.value
+            let fetched = try await performFetch()
             images = fetched
         } catch {
             errorMessage = error.localizedDescription
@@ -41,5 +39,10 @@ final class ImageListViewModel: ObservableObject {
         isLoading = false
         images = []
         await fetchImages()
+    }
+
+    /// Runs network + JSON decode off the main actor.
+    private nonisolated func performFetch() async throws -> [ImageItem] {
+        try await service.fetchImages()
     }
 }
