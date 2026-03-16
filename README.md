@@ -21,7 +21,6 @@
 - 🗂️ **Disk Size Limit with LRU Eviction** — Configurable disk quota (default 100MB) with oldest-first eviction and 70% trim ratio
 - ⚡ **Synchronous Cache Lookup** — `cachedImage(for:)` enables instant display in SwiftUI body / UIKit cell binding with zero async overhead
 - 🎨 **SwiftUI + UIKit** — `CachedAsyncImage` and `UICachedImageView` with identical visual behavior
-- ⚠️ **Error State Views** — Both SDK views show error indicators on load failure
 - 🧹 **Manual Cache Invalidation** — Clear all caches or remove specific images
 - ⚙️ **Configurable** — `ImageLoader.Configuration` for TTL, memory/disk limits, thumbnail dimension
 - 🧪 **Fully Testable** — Split protocols (`MemoryImageCaching`, `DiskImageCaching`, `ImageDownloading`) with dependency injection
@@ -182,7 +181,7 @@ The included **ExampleApp** demonstrates both SwiftUI and UIKit integration with
 |---------|-------------|-----------|
 | **Image Grid** | `LazyVGrid` + `CachedAsyncImage` | `UICollectionViewCompositionalLayout` + `UICachedImageView` |
 | **Placeholder** | Photo icon + spinner | Photo icon + activity indicator |
-| **Error State** | Error triangle icon | Error view with retry button |
+| **Error State** | Placeholder stays visible | Error view with retry button (app-level) |
 | **Pull to Refresh** | `.refreshable` | `UIRefreshControl` |
 | **Cache Clear** | Toolbar button | Navigation bar button |
 | **ID Badges** | Capsule with gradient | Rounded label |

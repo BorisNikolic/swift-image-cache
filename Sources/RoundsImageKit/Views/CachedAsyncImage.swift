@@ -7,14 +7,13 @@ import SwiftUI
 
 /// A SwiftUI view that asynchronously loads and caches an image from a URL.
 ///
-/// Displays a placeholder while the image is loading, then cross-fades to the
-/// loaded image. Shows an error indicator if loading fails.
+/// Displays a placeholder while the image is loading or if loading fails.
 /// Uses `ImageLoader` for two-tier caching (memory + disk).
 ///
 /// ## Usage
 /// ```swift
 /// CachedAsyncImage(url: imageURL) {
-///     ProgressView()
+///     Image(systemName: "photo")
 /// }
 /// ```
 public struct CachedAsyncImage<Placeholder: View>: View {
@@ -24,14 +23,14 @@ public struct CachedAsyncImage<Placeholder: View>: View {
 
     @State private var image: UIImage?
     @State private var isLoading = false
-    @State private var loadError: Error?
+    @State private var hasAttempted = false
 
     /// Creates a cached async image view.
     ///
     /// - Parameters:
     ///   - url: The URL of the image to load.
     ///   - imageLoader: The image loader to use. Defaults to `.shared`.
-    ///   - placeholder: A view to display while the image is loading.
+    ///   - placeholder: A view to display while the image is loading or on failure.
     public init(
         url: URL?,
         imageLoader: ImageLoader = .shared,
@@ -48,9 +47,6 @@ public struct CachedAsyncImage<Placeholder: View>: View {
                 Image(uiImage: displayImage)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-            } else if loadError != nil {
-                errorView
                     .frame(width: geometry.size.width, height: geometry.size.height)
             } else {
                 placeholder
@@ -72,25 +68,14 @@ public struct CachedAsyncImage<Placeholder: View>: View {
         return image
     }
 
-    private var errorView: some View {
-        Color(.tertiarySystemFill)
-            .overlay {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 24))
-                    .foregroundStyle(Color(.quaternaryLabel))
-            }
-    }
-
     @MainActor
     private func loadImage() async {
-        guard let url, !isLoading else { return }
+        guard let url, !isLoading, !hasAttempted else { return }
 
-        // Don't reload if we already have this image or already failed
-        if image != nil || loadError != nil { return }
-
-        // Fast path: sync memory cache hit — populate @State without actor hop
+        // Fast path: sync memory cache hit
         if let cached = imageLoader.cachedImage(for: url) {
             image = cached
+            hasAttempted = true
             return
         }
 
@@ -102,12 +87,11 @@ public struct CachedAsyncImage<Placeholder: View>: View {
                 image = loaded
             }
         } catch {
-            if !Task.isCancelled {
-                loadError = error
-            }
+            // On failure: placeholder stays visible (no error icon)
         }
 
         isLoading = false
+        hasAttempted = true
     }
 }
 
