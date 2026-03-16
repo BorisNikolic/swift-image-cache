@@ -91,12 +91,10 @@ public final class UICachedImageView: UIView {
         imageView.contentMode = .center
         activityIndicator.startAnimating()
 
-        currentTask = Task { [weak self] in
-            guard let self else { return }
-
+        currentTask = Task { [weak self, imageLoader] in
             do {
                 let loaded = try await imageLoader.image(for: url)
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled, let self else { return }
 
                 await MainActor.run {
                     self.imageView.contentMode = self.imageContentMode
@@ -110,9 +108,8 @@ public final class UICachedImageView: UIView {
                     self.activityIndicator.stopAnimating()
                 }
             } catch {
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled, let self else { return }
                 await MainActor.run {
-                    // On failure: keep showing placeholder
                     self.activityIndicator.stopAnimating()
                 }
             }

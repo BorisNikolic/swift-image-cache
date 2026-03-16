@@ -25,8 +25,15 @@ public actor ImageDownloader: ImageDownloading {
     private let session: URLSession
     private var inFlightTasks: [URL: Task<(UIImage, Data), Error>] = [:]
 
-    public init(session: URLSession = .shared) {
-        self.session = session
+    public init(session: URLSession? = nil) {
+        if let session {
+            self.session = session
+        } else {
+            let config = URLSessionConfiguration.default
+            config.timeoutIntervalForRequest = 30
+            config.timeoutIntervalForResource = 120
+            self.session = URLSession(configuration: config)
+        }
     }
 
     public func download(from url: URL) async throws -> (UIImage, Data) {

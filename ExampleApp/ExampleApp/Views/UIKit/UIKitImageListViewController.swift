@@ -9,6 +9,7 @@ import UIKit
 final class UIKitImageListViewController: UICollectionViewController {
     private let viewModel: ImageListViewModel
     private var dataSource: UICollectionViewDiffableDataSource<Int, ImageItem>!
+    private var prefetchTasks: [IndexPath: Task<Void, Never>] = [:]
     private lazy var errorContainerView = makeErrorView()
 
     // MARK: - Init
@@ -306,7 +307,17 @@ extension UIKitImageListViewController: UICollectionViewDataSourcePrefetching {
         for indexPath in indexPaths {
             guard let item = dataSource.itemIdentifier(for: indexPath),
                   let url = item.url else { continue }
-            Task { _ = try? await ImageLoader.shared.image(for: url) }
+            prefetchTasks[indexPath] = Task { [weak self] in
+                _ = try? await ImageLoader.shared.image(for: url)
+                self?.prefetchTasks[indexPath] = nil
+            }
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
+        for indexPath in indexPaths {
+            prefetchTasks[indexPath]?.cancel()
+            prefetchTasks[indexPath] = nil
         }
     }
 }
