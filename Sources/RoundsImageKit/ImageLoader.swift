@@ -12,7 +12,12 @@ import UIKit
 ///
 /// ## Usage
 /// ```swift
+/// // Default configuration
 /// let image = try await ImageLoader.shared.image(for: url)
+///
+/// // Custom configuration
+/// let loader = ImageLoader(configuration: .init(ttl: 2 * 60 * 60, memoryCacheCountLimit: 50))
+/// let image = try await loader.image(for: url)
 /// ```
 ///
 /// ## Architecture
@@ -21,6 +26,36 @@ import UIKit
 /// - **Network**: URLSession-based with request deduplication
 /// - **Flow**: Memory → Disk → Network → Store original bytes in both caches
 public actor ImageLoader {
+
+    // MARK: - Configuration
+
+    /// Configuration for controlling cache behavior.
+    public struct Configuration: Sendable {
+        /// Time-to-live for disk-cached images in seconds. Defaults to 4 hours.
+        public var ttl: TimeInterval
+
+        /// Maximum number of images to keep in memory cache.
+        public var memoryCacheCountLimit: Int
+
+        /// Maximum total bytes for the memory cache. Defaults to 50 MB.
+        public var memoryCacheSizeLimit: Int
+
+        /// Default configuration: 4h TTL, 100 images, 50 MB memory limit.
+        public static let `default` = Configuration()
+
+        public init(
+            ttl: TimeInterval = 4 * 60 * 60,
+            memoryCacheCountLimit: Int = 100,
+            memoryCacheSizeLimit: Int = 50 * 1024 * 1024
+        ) {
+            self.ttl = ttl
+            self.memoryCacheCountLimit = memoryCacheCountLimit
+            self.memoryCacheSizeLimit = memoryCacheSizeLimit
+        }
+    }
+
+    // MARK: - Properties
+
     /// Shared singleton instance with default configuration.
     public static let shared = ImageLoader()
 
@@ -28,21 +63,37 @@ public actor ImageLoader {
     private let diskCache: ImageCaching
     private let downloader: ImageDownloading
 
-    /// Creates an ImageLoader with injectable dependencies.
+    // MARK: - Init
+
+    /// Creates an ImageLoader from a configuration.
+    ///
+    /// - Parameter configuration: Cache and TTL settings. Defaults to `.default`.
+    public init(configuration: Configuration = .default) {
+        self.memoryCache = MemoryCache(
+            countLimit: configuration.memoryCacheCountLimit,
+            totalCostLimit: configuration.memoryCacheSizeLimit
+        )
+        self.diskCache = DiskCache(ttl: configuration.ttl)
+        self.downloader = ImageDownloader()
+    }
+
+    /// Creates an ImageLoader with injectable dependencies for testing.
     ///
     /// - Parameters:
-    ///   - memoryCache: In-memory cache implementation. Defaults to `MemoryCache`.
-    ///   - diskCache: Persistent disk cache implementation. Defaults to `DiskCache`.
-    ///   - downloader: Network downloader implementation. Defaults to `ImageDownloader`.
+    ///   - memoryCache: In-memory cache implementation.
+    ///   - diskCache: Persistent disk cache implementation.
+    ///   - downloader: Network downloader implementation.
     public init(
-        memoryCache: ImageCaching = MemoryCache(),
-        diskCache: ImageCaching = DiskCache(),
-        downloader: ImageDownloading = ImageDownloader()
+        memoryCache: ImageCaching,
+        diskCache: ImageCaching,
+        downloader: ImageDownloading
     ) {
         self.memoryCache = memoryCache
         self.diskCache = diskCache
         self.downloader = downloader
     }
+
+    // MARK: - Public
 
     /// Loads an image from cache or network.
     ///
@@ -60,7 +111,6 @@ public actor ImageLoader {
 
         // 2. Check disk cache
         if let cached = await diskCache.image(for: url) {
-            // Promote to memory cache using original data from disk
             if let data = cached.pngData() {
                 await memoryCache.store(data, for: url)
             }
