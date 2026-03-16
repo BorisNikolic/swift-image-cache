@@ -6,21 +6,28 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var viewModel = ImageListViewModel()
+
     var body: some View {
         TabView {
-            SwiftUIImageGridView()
+            SwiftUIImageGridView(viewModel: viewModel)
                 .tabItem {
                     Label(Theme.Strings.swiftUITab, systemImage: Theme.SFSymbol.swiftUITab)
                 }
                 .accessibilityIdentifier(Theme.AccessibilityID.swiftUITab)
 
-            UIKitImageListView()
+            UIKitImageListView(viewModel: viewModel)
                 .tabItem {
                     Label(Theme.Strings.uikitTab, systemImage: Theme.SFSymbol.uikitTab)
                 }
                 .accessibilityIdentifier(Theme.AccessibilityID.uikitTab)
         }
-        .tint(.indigo)
+        .tint(Theme.accentColor)
+        .task {
+            if viewModel.images.isEmpty {
+                await viewModel.fetchImages()
+            }
+        }
     }
 }
 

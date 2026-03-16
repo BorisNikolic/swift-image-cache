@@ -20,6 +20,7 @@ final class ImageListViewModel: ObservableObject {
     }
 
     func fetchImages() async {
+        guard !isLoading else { return }
         isLoading = true
         errorMessage = nil
 

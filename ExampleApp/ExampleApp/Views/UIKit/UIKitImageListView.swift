@@ -6,16 +6,11 @@
 import SwiftUI
 
 struct UIKitImageListView: View {
-    @StateObject private var viewModel = ImageListViewModel()
+    @ObservedObject var viewModel: ImageListViewModel
 
     var body: some View {
         UIKitImageListRepresentable(viewModel: viewModel)
             .ignoresSafeArea(edges: .bottom)
-            .task {
-                if viewModel.images.isEmpty {
-                    await viewModel.fetchImages()
-                }
-            }
     }
 }
 
@@ -30,12 +25,15 @@ struct UIKitImageListRepresentable: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ nav: UINavigationController, context: Context) {
-        if let vc = nav.viewControllers.first as? UIKitImageListViewController {
-            vc.updateImages(viewModel.images)
+        guard let vc = nav.viewControllers.first as? UIKitImageListViewController else { return }
+        vc.updateImages(viewModel.images)
+
+        if !viewModel.isLoading {
+            vc.endRefreshing()
         }
     }
 }
 
 #Preview {
-    UIKitImageListView()
+    UIKitImageListView(viewModel: ImageListViewModel())
 }

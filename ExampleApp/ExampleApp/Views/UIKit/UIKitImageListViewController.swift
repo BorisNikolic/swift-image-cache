@@ -44,6 +44,9 @@ final class UIKitImageListViewController: UICollectionViewController {
         snapshot.appendSections([0])
         snapshot.appendItems(images)
         dataSource.apply(snapshot, animatingDifferences: true)
+    }
+
+    func endRefreshing() {
         collectionView.refreshControl?.endRefreshing()
     }
 

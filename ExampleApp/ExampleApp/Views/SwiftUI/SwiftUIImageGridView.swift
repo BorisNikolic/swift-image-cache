@@ -7,7 +7,7 @@ import RoundsImageKit
 import SwiftUI
 
 struct SwiftUIImageGridView: View {
-    @StateObject private var viewModel = ImageListViewModel()
+    @ObservedObject var viewModel: ImageListViewModel
 
     private let columns = [
         GridItem(.flexible(), spacing: Theme.cellSpacing),
@@ -40,11 +40,6 @@ struct SwiftUIImageGridView: View {
             }
             .refreshable {
                 await viewModel.fetchImages()
-            }
-            .task {
-                if viewModel.images.isEmpty {
-                    await viewModel.fetchImages()
-                }
             }
         }
     }
@@ -179,5 +174,5 @@ private struct ImageCell: View {
 }
 
 #Preview {
-    SwiftUIImageGridView()
+    SwiftUIImageGridView(viewModel: ImageListViewModel())
 }
