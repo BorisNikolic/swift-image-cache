@@ -6,24 +6,25 @@
 import XCTest
 
 final class ExampleAppUITests: XCTestCase {
-    private var app: XCUIApplication!
-
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-        app = XCUIApplication()
+    @MainActor
+    private func launchApp() -> XCUIApplication {
+        let app = XCUIApplication()
         app.launch()
+        return app
     }
 
     // MARK: - Launch
 
     @MainActor
     func test_appLaunches_showsTabBar() throws {
+        let app = launchApp()
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 5))
     }
 
     @MainActor
     func test_swiftUITab_isSelectedByDefault() throws {
+        let app = launchApp()
         let swiftUITab = app.tabBars.buttons["SwiftUI"]
         XCTAssertTrue(swiftUITab.waitForExistence(timeout: 5))
         XCTAssertTrue(swiftUITab.isSelected)
@@ -33,6 +34,7 @@ final class ExampleAppUITests: XCTestCase {
 
     @MainActor
     func test_switchToUIKitTab() throws {
+        let app = launchApp()
         let uikitTab = app.tabBars.buttons["UIKit"]
         XCTAssertTrue(uikitTab.waitForExistence(timeout: 5))
         uikitTab.tap()
@@ -41,6 +43,7 @@ final class ExampleAppUITests: XCTestCase {
 
     @MainActor
     func test_switchBetweenTabs() throws {
+        let app = launchApp()
         let swiftUITab = app.tabBars.buttons["SwiftUI"]
         let uikitTab = app.tabBars.buttons["UIKit"]
 
@@ -57,12 +60,14 @@ final class ExampleAppUITests: XCTestCase {
 
     @MainActor
     func test_swiftUITab_showsNavigationTitle() throws {
+        let app = launchApp()
         let title = app.navigationBars["RoundsImageKit"]
         XCTAssertTrue(title.waitForExistence(timeout: 10))
     }
 
     @MainActor
     func test_swiftUITab_showsCacheButton() throws {
+        let app = launchApp()
         let cacheButton = app.navigationBars.buttons.element(boundBy: 0)
         XCTAssertTrue(cacheButton.waitForExistence(timeout: 10))
     }
@@ -71,6 +76,7 @@ final class ExampleAppUITests: XCTestCase {
 
     @MainActor
     func test_uikitTab_showsNavigationTitle() throws {
+        let app = launchApp()
         let uikitTab = app.tabBars.buttons["UIKit"]
         uikitTab.tap()
 
@@ -80,6 +86,7 @@ final class ExampleAppUITests: XCTestCase {
 
     @MainActor
     func test_uikitTab_showsClearCacheButton() throws {
+        let app = launchApp()
         let uikitTab = app.tabBars.buttons["UIKit"]
         uikitTab.tap()
 

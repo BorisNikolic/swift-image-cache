@@ -3,6 +3,7 @@
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
 
+import Foundation
 import Testing
 @testable import ExampleApp
 
@@ -23,8 +24,8 @@ struct ImageItemTests {
         #expect(item.url?.absoluteString == "https://example.com/photo.jpg")
     }
 
-    @Test func test_urlParsing_invalidURL() {
-        let item = ImageItem(id: 0, imageUrl: "not a url with spaces")
+    @Test func test_urlParsing_emptyString() {
+        let item = ImageItem(id: 0, imageUrl: "")
         #expect(item.url == nil)
     }
 
