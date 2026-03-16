@@ -9,6 +9,10 @@ import UIKit
 ///
 /// Stores decoded `UIImage` instances directly for zero-cost retrieval.
 public protocol MemoryImageCaching: Sendable {
+    /// Synchronous retrieval for instant display (e.g. SwiftUI body).
+    /// Safe because NSCache is thread-safe.
+    func cachedImage(for url: URL) -> UIImage?
+
     /// Retrieves a cached image for the given URL, if available.
     func image(for url: URL) async -> UIImage?
 

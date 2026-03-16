@@ -13,6 +13,10 @@ final class MockMemoryCache: MemoryImageCaching, @unchecked Sendable {
     private(set) var removeCallCount = 0
     private(set) var clearAllCallCount = 0
 
+    func cachedImage(for url: URL) -> UIImage? {
+        storedImages[url]
+    }
+
     func image(for url: URL) async -> UIImage? {
         imageForCallCount += 1
         return storedImages[url]

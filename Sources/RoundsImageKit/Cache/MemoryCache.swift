@@ -18,8 +18,12 @@ public final class MemoryCache: MemoryImageCaching, @unchecked Sendable {
         cache.totalCostLimit = totalCostLimit
     }
 
-    public func image(for url: URL) async -> UIImage? {
+    public func cachedImage(for url: URL) -> UIImage? {
         cache.object(forKey: url.absoluteString as NSString)
+    }
+
+    public func image(for url: URL) async -> UIImage? {
+        cachedImage(for: url)
     }
 
     public func store(_ image: UIImage, for url: URL) async {

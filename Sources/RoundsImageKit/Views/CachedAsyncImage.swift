@@ -44,12 +44,11 @@ public struct CachedAsyncImage<Placeholder: View>: View {
 
     public var body: some View {
         GeometryReader { geometry in
-            if let image {
-                Image(uiImage: image)
+            if let displayImage {
+                Image(uiImage: displayImage)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: geometry.size.width, height: geometry.size.height)
-                    .transition(.opacity.animation(.easeIn(duration: 0.2)))
             } else if loadError != nil {
                 errorView
                     .frame(width: geometry.size.width, height: geometry.size.height)
@@ -64,6 +63,15 @@ public struct CachedAsyncImage<Placeholder: View>: View {
         }
     }
 
+    /// Check sync memory cache first (instant, no actor hop),
+    /// then fall back to async-loaded @State image.
+    private var displayImage: UIImage? {
+        if let url, let cached = imageLoader.cachedImage(for: url) {
+            return cached
+        }
+        return image
+    }
+
     private var errorView: some View {
         Color(.tertiarySystemFill)
             .overlay {
@@ -76,9 +84,17 @@ public struct CachedAsyncImage<Placeholder: View>: View {
     @MainActor
     private func loadImage() async {
         guard let url, !isLoading else { return }
+
+        // Don't reload if we already have this image or already failed
+        if image != nil || loadError != nil { return }
+
+        // Fast path: sync memory cache hit — populate @State without actor hop
+        if let cached = imageLoader.cachedImage(for: url) {
+            image = cached
+            return
+        }
+
         isLoading = true
-        image = nil
-        loadError = nil
 
         do {
             let loaded = try await imageLoader.image(for: url)

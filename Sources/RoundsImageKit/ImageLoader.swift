@@ -44,13 +44,13 @@ public actor ImageLoader {
         /// When exceeded, oldest entries are evicted first.
         public var diskCacheSizeLimit: Int
 
-        /// Default configuration: 4h TTL, 100 images, 50 MB memory, 100 MB disk.
+        /// Default configuration: 4h TTL, 100 images, 200 MB memory, 100 MB disk.
         public static let `default` = Configuration()
 
         public init(
             ttl: TimeInterval = 4 * 60 * 60,
             memoryCacheCountLimit: Int = 100,
-            memoryCacheSizeLimit: Int = 50 * 1024 * 1024,
+            memoryCacheSizeLimit: Int = 200 * 1024 * 1024,
             diskCacheSizeLimit: Int = 100 * 1024 * 1024
         ) {
             self.ttl = ttl
@@ -68,6 +68,7 @@ public actor ImageLoader {
     private let memoryCache: MemoryImageCaching
     private let diskCache: DiskImageCaching
     private let downloader: ImageDownloading
+    private let maxThumbnailDimension: CGFloat
 
     // MARK: - Init
 
@@ -81,6 +82,8 @@ public actor ImageLoader {
         )
         diskCache = DiskCache(ttl: configuration.ttl, sizeLimit: configuration.diskCacheSizeLimit)
         downloader = ImageDownloader()
+        let screen = UIScreen.main.bounds
+        maxThumbnailDimension = max(screen.width, screen.height)
     }
 
     /// Creates an ImageLoader with injectable dependencies for testing.
@@ -97,9 +100,18 @@ public actor ImageLoader {
         self.memoryCache = memoryCache
         self.diskCache = diskCache
         self.downloader = downloader
+        let screen = UIScreen.main.bounds
+        maxThumbnailDimension = max(screen.width, screen.height)
     }
 
     // MARK: - Public
+
+    /// Synchronous memory cache lookup — no actor hop, no async overhead.
+    /// Use this in SwiftUI `body` to instantly show cached images when
+    /// `LazyVGrid` recreates a cell. Returns nil on cache miss.
+    public nonisolated func cachedImage(for url: URL) -> UIImage? {
+        memoryCache.cachedImage(for: url)
+    }
 
     /// Loads an image from cache or network.
     ///
@@ -115,20 +127,31 @@ public actor ImageLoader {
             return cached
         }
 
-        // 2. Check disk cache
+        // 2. Check disk cache — downscale before promoting to memory
         if let cached = await diskCache.image(for: url) {
-            await memoryCache.store(cached, for: url)
-            return cached
+            let thumbnail = downsample(cached)
+            await memoryCache.store(thumbnail, for: url)
+            return thumbnail
         }
 
         // 3. Download from network
         let (image, data) = try await downloader.download(from: url)
 
-        // 4. Store in both caches
-        await memoryCache.store(image, for: url)
+        // 4. Store downscaled in memory, original bytes on disk
+        let thumbnail = downsample(image)
+        await memoryCache.store(thumbnail, for: url)
         await diskCache.store(data, for: url)
 
-        return image
+        return thumbnail
+    }
+
+    // MARK: - Private
+
+    private func downsample(_ image: UIImage) -> UIImage {
+        let imageMax = max(image.size.width, image.size.height)
+        guard imageMax > maxThumbnailDimension else { return image }
+        let targetSize = CGSize(width: maxThumbnailDimension, height: maxThumbnailDimension)
+        return image.preparingThumbnail(of: targetSize) ?? image
     }
 
     /// Clears all cached images from both memory and disk.

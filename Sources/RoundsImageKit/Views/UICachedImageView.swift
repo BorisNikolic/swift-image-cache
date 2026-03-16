@@ -86,6 +86,14 @@ public final class UICachedImageView: UIView {
         guard url != currentURL || imageView.image == placeholder else { return }
         currentURL = url
 
+        // Sync memory cache hit — show instantly, skip async work
+        if let cached = imageLoader.cachedImage(for: url) {
+            imageView.image = cached
+            imageView.contentMode = imageContentMode
+            activityIndicator.stopAnimating()
+            return
+        }
+
         imageView.image = placeholder
         imageView.contentMode = .center
         activityIndicator.startAnimating()
