@@ -49,7 +49,6 @@ public struct CachedAsyncImage<Placeholder: View>: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: geometry.size.width, height: geometry.size.height)
-                    .clipped()
                     .transition(.opacity.animation(.easeIn(duration: 0.2)))
             } else if loadError != nil {
                 errorView
@@ -59,6 +58,7 @@ public struct CachedAsyncImage<Placeholder: View>: View {
                     .frame(width: geometry.size.width, height: geometry.size.height)
             }
         }
+        .clipped()
         .task(id: url) {
             await loadImage()
         }

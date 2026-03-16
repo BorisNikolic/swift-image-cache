@@ -35,6 +35,13 @@ public final class UICachedImageView: UIView {
         }
     }
 
+    /// Image shown when loading fails. Defaults to a warning triangle SF Symbol.
+    public var errorImage: UIImage? = {
+        let config = UIImage.SymbolConfiguration(pointSize: 24, weight: .regular)
+        return UIImage(systemName: "exclamationmark.triangle", withConfiguration: config)?
+            .withTintColor(.quaternaryLabel, renderingMode: .alwaysOriginal)
+    }()
+
     /// Content mode for the displayed image.
     public var imageContentMode: UIView.ContentMode = .scaleAspectFill {
         didSet { imageView.contentMode = imageContentMode }
@@ -104,6 +111,8 @@ public final class UICachedImageView: UIView {
             } catch {
                 guard !Task.isCancelled else { return }
                 await MainActor.run {
+                    self.imageView.image = self.errorImage
+                    self.imageView.contentMode = .center
                     self.activityIndicator.stopAnimating()
                 }
             }
