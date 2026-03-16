@@ -9,8 +9,8 @@ import UIKit
 
 @Suite("ImageLoader")
 struct ImageLoaderTests {
-    let memoryCache = MockImageCache()
-    let diskCache = MockImageCache()
+    let memoryCache = MockMemoryCache()
+    let diskCache = MockDiskCache()
     let downloader = MockImageDownloader()
 
     var loader: ImageLoader {
@@ -38,8 +38,8 @@ struct ImageLoaderTests {
     @Test func test_loadFromMemoryCache_whenAvailable() async throws {
         // Given
         let url = URL(string: "https://example.com/cached.png")!
-        let testData = TestHelpers.createTestImageData()
-        memoryCache.storedData[url] = testData
+        let testImage = TestHelpers.createTestImage()
+        memoryCache.storedImages[url] = testImage
 
         // When
         let result = try await loader.image(for: url)
@@ -68,8 +68,9 @@ struct ImageLoaderTests {
     @Test func test_clearCache_removesAllImages() async {
         // Given
         let url = URL(string: "https://example.com/image.png")!
+        let testImage = TestHelpers.createTestImage()
         let testData = TestHelpers.createTestImageData()
-        memoryCache.storedData[url] = testData
+        memoryCache.storedImages[url] = testImage
         diskCache.storedData[url] = testData
 
         // When
@@ -83,8 +84,9 @@ struct ImageLoaderTests {
     @Test func test_removeCachedImage_removesSpecific() async {
         // Given
         let url = URL(string: "https://example.com/remove.png")!
+        let testImage = TestHelpers.createTestImage()
         let testData = TestHelpers.createTestImageData()
-        memoryCache.storedData[url] = testData
+        memoryCache.storedImages[url] = testImage
         diskCache.storedData[url] = testData
 
         // When
@@ -93,7 +95,7 @@ struct ImageLoaderTests {
         // Then
         #expect(memoryCache.removeCallCount == 1)
         #expect(diskCache.removeCallCount == 1)
-        #expect(memoryCache.storedData[url] == nil)
+        #expect(memoryCache.storedImages[url] == nil)
         #expect(diskCache.storedData[url] == nil)
     }
 }

@@ -8,7 +8,8 @@ import SwiftUI
 /// A SwiftUI view that asynchronously loads and caches an image from a URL.
 ///
 /// Displays a placeholder while the image is loading, then cross-fades to the
-/// loaded image. Uses `ImageLoader` for two-tier caching (memory + disk).
+/// loaded image. Shows an error indicator if loading fails.
+/// Uses `ImageLoader` for two-tier caching (memory + disk).
 ///
 /// ## Usage
 /// ```swift
@@ -50,6 +51,9 @@ public struct CachedAsyncImage<Placeholder: View>: View {
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .clipped()
                     .transition(.opacity.animation(.easeIn(duration: 0.2)))
+            } else if loadError != nil {
+                errorView
+                    .frame(width: geometry.size.width, height: geometry.size.height)
             } else {
                 placeholder
                     .frame(width: geometry.size.width, height: geometry.size.height)
@@ -60,6 +64,16 @@ public struct CachedAsyncImage<Placeholder: View>: View {
         }
     }
 
+    private var errorView: some View {
+        Color(.tertiarySystemFill)
+            .overlay {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.system(size: 24))
+                    .foregroundStyle(Color(.quaternaryLabel))
+            }
+    }
+
+    @MainActor
     private func loadImage() async {
         guard let url, !isLoading else { return }
         isLoading = true

@@ -12,7 +12,7 @@ import UIKit
 /// This preserves the original format (PNG, JPEG, WebP, etc.)
 /// following the same approach as Kingfisher, Nuke, and SDWebImage.
 /// Default TTL is 4 hours — images older than this are treated as expired.
-public final class DiskCache: ImageCaching, @unchecked Sendable {
+public final class DiskCache: DiskImageCaching, @unchecked Sendable {
     private let cacheDirectory: URL
     private let fileManager = FileManager.default
     private let ttl: TimeInterval
