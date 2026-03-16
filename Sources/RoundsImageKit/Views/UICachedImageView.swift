@@ -71,6 +71,8 @@ public final class UICachedImageView: UIView {
 
         guard let url else {
             imageView.image = placeholder
+            imageView.contentMode = .center
+            activityIndicator.stopAnimating()
             return
         }
 
@@ -113,6 +115,7 @@ public final class UICachedImageView: UIView {
         currentTask?.cancel()
         currentTask = nil
         currentURL = nil
+        activityIndicator.stopAnimating()
     }
 
     // MARK: - Reuse

@@ -43,12 +43,16 @@ public final class DiskCache: ImageCaching, @unchecked Sendable {
 
         guard fileManager.fileExists(atPath: imagePath.path) else { return nil }
 
-        if let metaData = try? Data(contentsOf: metaPath),
-           let entry = try? JSONDecoder().decode(CacheEntry.self, from: metaData) {
-            guard entry.isValid(ttl: ttl) else {
-                await remove(for: url)
-                return nil
-            }
+        guard let metaData = try? Data(contentsOf: metaPath),
+              let entry = try? JSONDecoder().decode(CacheEntry.self, from: metaData) else {
+            // Missing or corrupt metadata — purge the orphaned image
+            await remove(for: url)
+            return nil
+        }
+
+        guard entry.isValid(ttl: ttl) else {
+            await remove(for: url)
+            return nil
         }
 
         guard let data = try? Data(contentsOf: imagePath) else { return nil }

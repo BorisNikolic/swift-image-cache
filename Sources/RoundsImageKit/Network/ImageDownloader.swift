@@ -11,7 +11,6 @@ public enum ImageLoadingError: Error, Sendable {
     case networkError(Error)
     case invalidResponse(Int)
     case invalidImageData
-    case cancelled
 }
 
 /// URLSession-based image downloader with request deduplication.
