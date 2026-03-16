@@ -162,7 +162,7 @@ The included **ExampleApp** demonstrates both SwiftUI and UIKit integration:
 make test
 
 # Via xcodebuild (iOS simulator required)
-xcodebuild test -scheme RoundsImageKitTests \
+xcodebuild test -scheme RoundsImageKit \
   -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.6'
 ```
 
@@ -213,7 +213,7 @@ rounds/
 │   ├── Network/                  # ImageDownloader, ImageDownloading protocol
 │   ├── Views/                    # CachedAsyncImage, UICachedImageView
 │   └── ImageLoader.swift         # Main public API
-├── 🧪 Tests/RoundsImageKitTests/ # Unit tests (Swift Testing)
+├── 🧪 Tests/RoundsImageKit/ # Unit tests (Swift Testing)
 ├── 📱 ExampleApp/                # Demo app (SwiftUI + UIKit)
 ├── 🤖 .claude/                   # Claude Code config (rules, agents, skills)
 ├── 📄 CLAUDE.md                  # Project guide for AI assistance

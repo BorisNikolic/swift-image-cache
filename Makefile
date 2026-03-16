@@ -45,7 +45,7 @@ hook: check-deps
 
 test:
 	@echo "Running SDK unit tests..."
-	xcodebuild test -scheme RoundsImageKit \
+	set -o pipefail && xcodebuild test -scheme RoundsImageKit \
 		-destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.6' \
 		2>&1 | grep -E "◇|✔|✘|error:|BUILD|Executed"
 
