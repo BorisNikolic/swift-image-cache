@@ -117,4 +117,29 @@ struct DiskCacheTests {
         // Cleanup
         try? FileManager.default.removeItem(at: tempDirectory)
     }
+
+    @Test func test_evictsOldestWhenSizeLimitExceeded() async {
+        // Given — size limit fits one image but not two
+        let tinyDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("DiskCacheEvict-\(UUID().uuidString)")
+        let data = TestHelpers.createTestImageData()
+        let oneImageSize = data.count
+        let tinyCache = DiskCache(cacheDirectory: tinyDir, ttl: 3600, sizeLimit: oneImageSize + 1)
+
+        let url1 = URL(string: "https://example.com/first.png")!
+        let url2 = URL(string: "https://example.com/second.png")!
+
+        // When — store first (fits), then second triggers eviction of first
+        await tinyCache.store(data, for: url1)
+        await tinyCache.store(data, for: url2)
+
+        // Then — oldest (url1) should be evicted, newest (url2) should survive
+        let first = await tinyCache.image(for: url1)
+        let second = await tinyCache.image(for: url2)
+        #expect(first == nil)
+        #expect(second != nil)
+
+        // Cleanup
+        try? FileManager.default.removeItem(at: tinyDir)
+    }
 }

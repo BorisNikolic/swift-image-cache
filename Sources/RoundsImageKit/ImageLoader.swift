@@ -40,17 +40,23 @@ public actor ImageLoader {
         /// Maximum total bytes for the memory cache. Defaults to 50 MB.
         public var memoryCacheSizeLimit: Int
 
-        /// Default configuration: 4h TTL, 100 images, 50 MB memory limit.
+        /// Maximum total bytes for the disk cache. Defaults to 100 MB.
+        /// When exceeded, oldest entries are evicted first.
+        public var diskCacheSizeLimit: Int
+
+        /// Default configuration: 4h TTL, 100 images, 50 MB memory, 100 MB disk.
         public static let `default` = Configuration()
 
         public init(
             ttl: TimeInterval = 4 * 60 * 60,
             memoryCacheCountLimit: Int = 100,
-            memoryCacheSizeLimit: Int = 50 * 1024 * 1024
+            memoryCacheSizeLimit: Int = 50 * 1024 * 1024,
+            diskCacheSizeLimit: Int = 100 * 1024 * 1024
         ) {
             self.ttl = ttl
             self.memoryCacheCountLimit = memoryCacheCountLimit
             self.memoryCacheSizeLimit = memoryCacheSizeLimit
+            self.diskCacheSizeLimit = diskCacheSizeLimit
         }
     }
 
@@ -73,7 +79,7 @@ public actor ImageLoader {
             countLimit: configuration.memoryCacheCountLimit,
             totalCostLimit: configuration.memoryCacheSizeLimit
         )
-        diskCache = DiskCache(ttl: configuration.ttl)
+        diskCache = DiskCache(ttl: configuration.ttl, sizeLimit: configuration.diskCacheSizeLimit)
         downloader = ImageDownloader()
     }
 
