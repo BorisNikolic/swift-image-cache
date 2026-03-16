@@ -14,7 +14,7 @@
 
 - 🚀 **Swift 6 Concurrency** — Actors, async/await, Sendable, `@MainActor` throughout
 - 💾 **Two-Tier Caching** — In-memory (`NSCache`) + persistent disk cache
-- 📂 **Format-Preserving Storage** — Stores original bytes (PNG, JPEG, WebP) — no re-encoding, following Kingfisher/Nuke/SDWebImage approach
+- 📂 **Format-Preserving Storage** — Stores original bytes (PNG, JPEG, WebP) — no re-encoding
 - ⏰ **4-Hour TTL** — Disk-cached images expire automatically; configurable via `ImageLoader.Configuration`
 - 🔄 **Cancellation-Safe Deduplication** — Shared downloads survive individual caller cancellation (e.g. cell reuse during scroll)
 - 🎨 **SwiftUI + UIKit** — `CachedAsyncImage` and `UICachedImageView` with identical visual behavior

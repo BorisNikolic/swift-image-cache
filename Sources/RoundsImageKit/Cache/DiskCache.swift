@@ -10,7 +10,7 @@ import UIKit
 ///
 /// Stores raw image data bytes directly — no re-encoding.
 /// This preserves the original format (PNG, JPEG, WebP, etc.)
-/// following the same approach as Kingfisher, Nuke, and SDWebImage.
+/// Preserves the original format without any conversion.
 /// Default TTL is 4 hours — images older than this are treated as expired.
 public final class DiskCache: DiskImageCaching, @unchecked Sendable {
     private let cacheDirectory: URL

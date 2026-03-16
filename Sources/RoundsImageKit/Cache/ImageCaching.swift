@@ -25,7 +25,7 @@ public protocol MemoryImageCaching: Sendable {
 /// Abstraction for persistent disk-based image caching.
 ///
 /// Stores raw `Data` bytes to preserve the original image format (PNG, JPEG, etc.)
-/// without re-encoding — following the same approach as Kingfisher, Nuke, and SDWebImage.
+/// without re-encoding.
 public protocol DiskImageCaching: Sendable {
     /// Retrieves a cached image for the given URL, if available.
     func image(for url: URL) async -> UIImage?
