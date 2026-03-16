@@ -44,6 +44,11 @@ public actor ImageLoader {
         /// When exceeded, oldest entries are evicted first.
         public var diskCacheSizeLimit: Int
 
+        /// Maximum dimension (width or height) for thumbnails stored in memory.
+        /// Images larger than this are downsampled before memory caching.
+        /// Defaults to 1024 (suitable for most screen sizes).
+        public var maxThumbnailDimension: CGFloat
+
         /// Default configuration: 4h TTL, 100 images, 200 MB memory, 100 MB disk.
         public static let `default` = Configuration()
 
@@ -51,12 +56,14 @@ public actor ImageLoader {
             ttl: TimeInterval = 4 * 60 * 60,
             memoryCacheCountLimit: Int = 100,
             memoryCacheSizeLimit: Int = 200 * 1024 * 1024,
-            diskCacheSizeLimit: Int = 100 * 1024 * 1024
+            diskCacheSizeLimit: Int = 100 * 1024 * 1024,
+            maxThumbnailDimension: CGFloat = 1024
         ) {
             self.ttl = ttl
             self.memoryCacheCountLimit = memoryCacheCountLimit
             self.memoryCacheSizeLimit = memoryCacheSizeLimit
             self.diskCacheSizeLimit = diskCacheSizeLimit
+            self.maxThumbnailDimension = maxThumbnailDimension
         }
     }
 
@@ -82,8 +89,7 @@ public actor ImageLoader {
         )
         diskCache = DiskCache(ttl: configuration.ttl, sizeLimit: configuration.diskCacheSizeLimit)
         downloader = ImageDownloader()
-        let screen = UIScreen.main.bounds
-        maxThumbnailDimension = max(screen.width, screen.height)
+        maxThumbnailDimension = configuration.maxThumbnailDimension
     }
 
     /// Creates an ImageLoader with injectable dependencies for testing.
@@ -100,8 +106,7 @@ public actor ImageLoader {
         self.memoryCache = memoryCache
         self.diskCache = diskCache
         self.downloader = downloader
-        let screen = UIScreen.main.bounds
-        maxThumbnailDimension = max(screen.width, screen.height)
+        maxThumbnailDimension = 1024
     }
 
     // MARK: - Public
