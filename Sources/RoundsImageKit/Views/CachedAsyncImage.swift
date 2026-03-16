@@ -23,7 +23,6 @@ public struct CachedAsyncImage<Placeholder: View>: View {
 
     @State private var image: UIImage?
     @State private var isLoading = false
-    @State private var hasAttempted = false
 
     /// Creates a cached async image view.
     ///
@@ -70,12 +69,12 @@ public struct CachedAsyncImage<Placeholder: View>: View {
 
     @MainActor
     private func loadImage() async {
-        guard let url, !isLoading, !hasAttempted else { return }
+        guard let url, !isLoading else { return }
+        if image != nil { return }
 
         // Fast path: sync memory cache hit
         if let cached = imageLoader.cachedImage(for: url) {
             image = cached
-            hasAttempted = true
             return
         }
 
