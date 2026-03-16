@@ -47,7 +47,8 @@ playground.xcworkspace
 .build/
 Package.swift.orig
 Package.resolved
-.swiftpm
+.swiftpm/xcode/package.xcworkspace
+.swiftpm/xcode/xcuserdata
 
 # fastlane
 fastlane/test_output
