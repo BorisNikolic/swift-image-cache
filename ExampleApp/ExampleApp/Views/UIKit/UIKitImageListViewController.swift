@@ -1,4 +1,4 @@
-
+//
 //  UIKitImageListViewController.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
@@ -124,7 +124,7 @@ final class UIKitImageListViewController: UICollectionViewController {
             stack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
             stack.centerYAnchor.constraint(equalTo: container.centerYAnchor),
             stack.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: Theme.gridPadding),
-            stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -Theme.gridPadding),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -Theme.gridPadding)
         ])
 
         return container
@@ -284,7 +284,7 @@ private final class ImageCell: UICollectionViewCell {
 
             idLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Theme.badgePadding),
             idLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Theme.badgePadding),
-            idLabel.heightAnchor.constraint(equalToConstant: Theme.badgeLabelHeight),
+            idLabel.heightAnchor.constraint(equalToConstant: Theme.badgeLabelHeight)
         ])
     }
 }
@@ -301,7 +301,7 @@ private final class PaddedLabel: UILabel {
 // MARK: - Gradient View
 
 private final class GradientView: UIView {
-    override class var layerClass: AnyClass { CAGradientLayer.self }
+    override static var layerClass: AnyClass { CAGradientLayer.self }
 
     override init(frame: CGRect) {
         super.init(frame: frame)

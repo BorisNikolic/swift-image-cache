@@ -1,4 +1,4 @@
-
+//
 //  Theme.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
@@ -81,9 +81,21 @@ enum Theme {
 
         // MARK: - Accessibility Hints
 
-        static let clearCacheHint = NSLocalizedString("accessibility.clearCacheHint", value: "Clears the image cache and reloads all images", comment: "Accessibility hint for clear cache button")
-        static let retryHint = NSLocalizedString("accessibility.retryHint", value: "Retries loading images", comment: "Accessibility hint for retry button")
-        static let imageHint = NSLocalizedString("accessibility.imageHint", value: "Photo from the image gallery", comment: "Accessibility hint for image cell")
+        static let clearCacheHint = NSLocalizedString(
+            "accessibility.clearCacheHint",
+            value: "Clears the image cache and reloads all images",
+            comment: "Accessibility hint for clear cache button"
+        )
+        static let retryHint = NSLocalizedString(
+            "accessibility.retryHint",
+            value: "Retries loading images",
+            comment: "Accessibility hint for retry button"
+        )
+        static let imageHint = NSLocalizedString(
+            "accessibility.imageHint",
+            value: "Photo from the image gallery",
+            comment: "Accessibility hint for image cell"
+        )
     }
 
     // MARK: - Accessibility IDs

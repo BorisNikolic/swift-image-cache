@@ -41,6 +41,10 @@ globs: Sources/**/*.swift, Tests/**/*.swift, ExampleApp/**/*.swift
 - Prefer `struct` over `class` unless reference semantics are needed
 - Use `actor` for thread-safe mutable state
 
+## Linting
+
+Rules are enforced by `.swiftlint.yml` and `.swiftformat` — run `make format` and `make lint` before committing.
+
 ## Code Minimalism
 
 - No verbose comments — only explain "why", never "what"

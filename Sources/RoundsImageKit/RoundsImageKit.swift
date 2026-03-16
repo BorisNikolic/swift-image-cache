@@ -1,4 +1,7 @@
-// RoundsImageKit — Image downloading and caching library
+//
+//  RoundsImageKit.swift
+//
+//  Copyright © 2026 Boris Nikolic. All rights reserved.
 
 /// RoundsImageKit namespace
 public enum RoundsImageKit {

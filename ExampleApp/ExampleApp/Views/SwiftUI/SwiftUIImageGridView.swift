@@ -1,4 +1,4 @@
-
+//
 //  SwiftUIImageGridView.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
@@ -48,7 +48,7 @@ struct SwiftUIImageGridView: View {
 
     @ViewBuilder
     private var contentView: some View {
-        if viewModel.isLoading && viewModel.images.isEmpty {
+        if viewModel.isLoading, viewModel.images.isEmpty {
             loadingView
         } else if let error = viewModel.errorMessage, viewModel.images.isEmpty {
             errorView(error)

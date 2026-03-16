@@ -1,4 +1,4 @@
-
+//
 //  UICachedImageView.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
@@ -157,7 +157,7 @@ public final class UICachedImageView: UIView {
             imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
 
             activityIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }
 }

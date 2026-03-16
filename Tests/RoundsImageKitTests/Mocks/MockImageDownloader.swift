@@ -1,10 +1,10 @@
-
+//
 //  MockImageDownloader.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
 
-import UIKit
 @testable import RoundsImageKit
+import UIKit
 
 final class MockImageDownloader: ImageDownloading, @unchecked Sendable {
     var resultToReturn: Result<(UIImage, Data), Error> = .success((UIImage(), Data()))

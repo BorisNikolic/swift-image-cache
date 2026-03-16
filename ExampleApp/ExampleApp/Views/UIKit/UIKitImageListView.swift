@@ -1,4 +1,4 @@
-
+//
 //  UIKitImageListView.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
@@ -18,24 +18,24 @@ struct UIKitImageListRepresentable: UIViewControllerRepresentable {
     @ObservedObject var viewModel: ImageListViewModel
 
     func makeUIViewController(context: Context) -> UINavigationController {
-        let vc = UIKitImageListViewController(viewModel: viewModel)
-        let nav = UINavigationController(rootViewController: vc)
+        let controller = UIKitImageListViewController(viewModel: viewModel)
+        let nav = UINavigationController(rootViewController: controller)
         nav.navigationBar.prefersLargeTitles = true
         return nav
     }
 
     func updateUIViewController(_ nav: UINavigationController, context: Context) {
-        guard let vc = nav.viewControllers.first as? UIKitImageListViewController else { return }
-        vc.updateImages(viewModel.images)
+        guard let controller = nav.viewControllers.first as? UIKitImageListViewController else { return }
+        controller.updateImages(viewModel.images)
 
         if let message = viewModel.errorMessage, viewModel.images.isEmpty {
-            vc.showError(message)
+            controller.showError(message)
         } else {
-            vc.hideError()
+            controller.hideError()
         }
 
         if !viewModel.isLoading {
-            vc.endRefreshing()
+            controller.endRefreshing()
         }
     }
 }

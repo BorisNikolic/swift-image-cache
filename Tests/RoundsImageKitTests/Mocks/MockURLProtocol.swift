@@ -1,4 +1,4 @@
-
+//
 //  MockURLProtocol.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
@@ -8,8 +8,10 @@ import Foundation
 final class MockURLProtocol: URLProtocol {
     nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
+    // swiftlint:disable:next static_over_final_class
     override class func canInit(with request: URLRequest) -> Bool { true }
 
+    // swiftlint:disable:next static_over_final_class
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {

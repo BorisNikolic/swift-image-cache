@@ -1,11 +1,11 @@
-
+//
 //  ImageLoaderTests.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
 
+@testable import RoundsImageKit
 import Testing
 import UIKit
-@testable import RoundsImageKit
 
 @Suite("ImageLoader")
 struct ImageLoaderTests {

@@ -1,4 +1,4 @@
-
+//
 //  DiskCache.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
@@ -23,7 +23,7 @@ public final class DiskCache: DiskImageCaching, @unchecked Sendable {
     ///   - ttl: Time-to-live in seconds. Defaults to 4 hours (14400 seconds).
     public init(directory: String = "RoundsImageKit", ttl: TimeInterval = 4 * 60 * 60) {
         let caches = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-        self.cacheDirectory = caches.appendingPathComponent(directory)
+        cacheDirectory = caches.appendingPathComponent(directory)
         self.ttl = ttl
         createDirectoryIfNeeded()
     }

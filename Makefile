@@ -34,7 +34,7 @@ hook: check-deps
 	@echo "" >> .git/hooks/pre-commit
 	@echo "# Run SwiftLint on staged Swift files" >> .git/hooks/pre-commit
 	@echo "git diff --cached --name-only --diff-filter=AM -- '*.swift' | while read file; do" >> .git/hooks/pre-commit
-	@echo "  swiftlint lint --strict --config .swiftlint.yml --path \"\$$file\"" >> .git/hooks/pre-commit
+	@echo "  swiftlint lint --strict --config .swiftlint.yml \"\$$file\"" >> .git/hooks/pre-commit
 	@echo "  if [ \$$? -ne 0 ]; then" >> .git/hooks/pre-commit
 	@echo "    echo \"SwiftLint failed for \$$file\"" >> .git/hooks/pre-commit
 	@echo "    exit 1" >> .git/hooks/pre-commit

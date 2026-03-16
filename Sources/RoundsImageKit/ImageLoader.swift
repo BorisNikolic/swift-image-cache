@@ -1,4 +1,4 @@
-
+//
 //  ImageLoader.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
@@ -69,12 +69,12 @@ public actor ImageLoader {
     ///
     /// - Parameter configuration: Cache and TTL settings. Defaults to `.default`.
     public init(configuration: Configuration = .default) {
-        self.memoryCache = MemoryCache(
+        memoryCache = MemoryCache(
             countLimit: configuration.memoryCacheCountLimit,
             totalCostLimit: configuration.memoryCacheSizeLimit
         )
-        self.diskCache = DiskCache(ttl: configuration.ttl)
-        self.downloader = ImageDownloader()
+        diskCache = DiskCache(ttl: configuration.ttl)
+        downloader = ImageDownloader()
     }
 
     /// Creates an ImageLoader with injectable dependencies for testing.
