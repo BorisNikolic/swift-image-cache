@@ -11,11 +11,9 @@ import UIKit
 /// Stores raw image data bytes directly — no re-encoding.
 /// Preserves the original format (PNG, JPEG, WebP) without any conversion.
 ///
-/// Uses a Nuke-inspired sweep strategy:
-/// - Tracks `currentSize` in memory (cheap integer comparison on every store)
-/// - Periodic background sweep on init (delayed, low priority)
-/// - When over limit, trims to `trimRatio` (70%) to avoid sweeping again immediately
-/// - Sweep removes expired entries first, then oldest by timestamp
+/// All file I/O runs on a dedicated background queue (`ioQueue`) so it never
+/// blocks the ImageLoader actor or the main thread. Uses in-memory size
+/// tracking with periodic background sweeps for eviction.
 public final class DiskCache: DiskImageCaching, @unchecked Sendable {
     private let cacheDirectory: URL
     private let fileManager = FileManager.default
@@ -26,11 +24,6 @@ public final class DiskCache: DiskImageCaching, @unchecked Sendable {
     private var currentSize: Int64 = 0
     private let ioQueue = DispatchQueue(label: "com.roundsimagekit.diskcache", qos: .utility)
 
-    /// Creates a disk cache.
-    /// - Parameters:
-    ///   - directory: Custom cache directory name. Defaults to `"RoundsImageKit"`.
-    ///   - ttl: Time-to-live in seconds. Defaults to 4 hours.
-    ///   - sizeLimit: Maximum total bytes on disk. Defaults to 100 MB.
     public init(
         directory: String = "RoundsImageKit",
         ttl: TimeInterval = 4 * 60 * 60,
@@ -41,7 +34,7 @@ public final class DiskCache: DiskImageCaching, @unchecked Sendable {
         self.ttl = ttl
         self.sizeLimit = sizeLimit
         createDirectoryIfNeeded()
-        calculateCurrentSize()
+        ioQueue.sync { calculateCurrentSize() }
         scheduleSweep()
     }
 
@@ -54,75 +47,109 @@ public final class DiskCache: DiskImageCaching, @unchecked Sendable {
         self.ttl = ttl
         self.sizeLimit = sizeLimit
         createDirectoryIfNeeded()
-        calculateCurrentSize()
+        ioQueue.sync { calculateCurrentSize() }
     }
 
     // MARK: - DiskImageCaching
 
     public func image(for url: URL) async -> UIImage? {
         let key = cacheKey(for: url)
-        let imagePath = imagePath(for: key)
-        let metaPath = metaPath(for: key)
+        let imgPath = imagePath(for: key)
+        let mtaPath = metaPath(for: key)
 
-        guard fileManager.fileExists(atPath: imagePath.path) else { return nil }
+        return await withCheckedContinuation { continuation in
+            ioQueue.async { [self] in
+                guard fileManager.fileExists(atPath: imgPath.path) else {
+                    continuation.resume(returning: nil)
+                    return
+                }
 
-        guard let metaData = try? Data(contentsOf: metaPath),
-              let entry = try? JSONDecoder().decode(CacheEntry.self, from: metaData) else {
-            await remove(for: url)
-            return nil
+                guard let metaData = try? Data(contentsOf: mtaPath),
+                      let entry = try? JSONDecoder().decode(CacheEntry.self, from: metaData) else {
+                    try? fileManager.removeItem(at: imgPath)
+                    try? fileManager.removeItem(at: mtaPath)
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                guard entry.isValid(ttl: ttl) else {
+                    currentSize -= entry.fileSize
+                    try? fileManager.removeItem(at: imgPath)
+                    try? fileManager.removeItem(at: mtaPath)
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                guard let data = try? Data(contentsOf: imgPath) else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                let image = UIImage(data: data)
+                continuation.resume(returning: image)
+            }
         }
-
-        guard entry.isValid(ttl: ttl) else {
-            currentSize -= entry.fileSize
-            await remove(for: url)
-            return nil
-        }
-
-        guard let data = try? Data(contentsOf: imagePath) else { return nil }
-        return UIImage(data: data)
     }
 
     public func store(_ data: Data, for url: URL) async {
         let key = cacheKey(for: url)
-        let imagePath = imagePath(for: key)
-        let metaPath = metaPath(for: key)
+        let imgPath = imagePath(for: key)
+        let mtaPath = metaPath(for: key)
 
-        // Remove old entry size if overwriting
-        if let existingMeta = try? Data(contentsOf: metaPath),
-           let existing = try? JSONDecoder().decode(CacheEntry.self, from: existingMeta) {
-            currentSize -= existing.fileSize
-        }
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            ioQueue.async { [self] in
+                if let existingMeta = try? Data(contentsOf: mtaPath),
+                   let existing = try? JSONDecoder().decode(CacheEntry.self, from: existingMeta) {
+                    currentSize -= existing.fileSize
+                }
 
-        do {
-            try data.write(to: imagePath, options: .atomic)
-            let entry = CacheEntry(
-                url: url.absoluteString,
-                timestamp: Date(),
-                fileSize: Int64(data.count)
-            )
-            let metaData = try JSONEncoder().encode(entry)
-            try metaData.write(to: metaPath, options: .atomic)
-            currentSize += Int64(data.count)
-        } catch {
-            return
-        }
+                do {
+                    try data.write(to: imgPath, options: .atomic)
+                    let entry = CacheEntry(
+                        url: url.absoluteString,
+                        timestamp: Date(),
+                        fileSize: Int64(data.count)
+                    )
+                    let metaData = try JSONEncoder().encode(entry)
+                    try metaData.write(to: mtaPath, options: .atomic)
+                    currentSize += Int64(data.count)
+                } catch {
+                    continuation.resume()
+                    return
+                }
 
-        // Cheap integer check — no filesystem scan
-        if currentSize > sizeLimit {
-            performSweep()
+                if currentSize > sizeLimit {
+                    performSweep()
+                }
+
+                continuation.resume()
+            }
         }
     }
 
     public func remove(for url: URL) async {
         let key = cacheKey(for: url)
-        try? fileManager.removeItem(at: imagePath(for: key))
-        try? fileManager.removeItem(at: metaPath(for: key))
+        let imgPath = imagePath(for: key)
+        let mtaPath = metaPath(for: key)
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            ioQueue.async { [self] in
+                try? fileManager.removeItem(at: imgPath)
+                try? fileManager.removeItem(at: mtaPath)
+                continuation.resume()
+            }
+        }
     }
 
     public func clearAll() async {
-        try? fileManager.removeItem(at: cacheDirectory)
-        currentSize = 0
-        createDirectoryIfNeeded()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            ioQueue.async { [self] in
+                try? fileManager.removeItem(at: cacheDirectory)
+                currentSize = 0
+                createDirectoryIfNeeded()
+                continuation.resume()
+            }
+        }
     }
 
     // MARK: - Sweep
@@ -142,36 +169,32 @@ public final class DiskCache: DiskImageCaching, @unchecked Sendable {
         var entries: [EvictionCandidate] = []
         var totalSize: Int64 = 0
 
-        for metaPath in metaFiles {
-            guard let data = try? Data(contentsOf: metaPath),
+        for path in metaFiles {
+            guard let data = try? Data(contentsOf: path),
                   let entry = try? JSONDecoder().decode(CacheEntry.self, from: data) else {
-                // Corrupt meta — remove orphan
-                let imageName = metaPath.deletingPathExtension().lastPathComponent
+                let imageName = path.deletingPathExtension().lastPathComponent
                 try? fileManager.removeItem(at: imagePath(for: imageName))
-                try? fileManager.removeItem(at: metaPath)
+                try? fileManager.removeItem(at: path)
                 continue
             }
 
-            // Remove expired entries immediately
             if !entry.isValid(ttl: ttl) {
                 let key = cacheKey(for: entry.url)
                 try? fileManager.removeItem(at: imagePath(for: key))
-                try? fileManager.removeItem(at: metaPath)
+                try? fileManager.removeItem(at: path)
                 continue
             }
 
-            entries.append(EvictionCandidate(entry: entry, metaPath: metaPath))
+            entries.append(EvictionCandidate(entry: entry, metaPath: path))
             totalSize += entry.fileSize
         }
 
-        // Trim to trimRatio (70%) of limit to avoid sweeping again immediately
         let targetSize = Int64(Double(sizeLimit) * trimRatio)
         guard totalSize > sizeLimit else {
             currentSize = totalSize
             return
         }
 
-        // Sort oldest first
         entries.sort { $0.entry.timestamp < $1.entry.timestamp }
 
         for candidate in entries {
@@ -194,8 +217,8 @@ public final class DiskCache: DiskImageCaching, @unchecked Sendable {
         ).filter({ $0.pathExtension == "meta" }) else { return }
 
         var total: Int64 = 0
-        for metaPath in metaFiles {
-            if let data = try? Data(contentsOf: metaPath),
+        for path in metaFiles {
+            if let data = try? Data(contentsOf: path),
                let entry = try? JSONDecoder().decode(CacheEntry.self, from: data) {
                 total += entry.fileSize
             }

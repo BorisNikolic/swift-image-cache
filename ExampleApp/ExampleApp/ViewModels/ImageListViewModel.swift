@@ -25,7 +25,10 @@ final class ImageListViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            images = try await service.fetchImages()
+            let fetched = try await Task.detached { [service] in
+                try await service.fetchImages()
+            }.value
+            images = fetched
         } catch {
             errorMessage = error.localizedDescription
         }
