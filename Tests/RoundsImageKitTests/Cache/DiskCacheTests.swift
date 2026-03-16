@@ -119,27 +119,49 @@ struct DiskCacheTests {
     }
 
     @Test func test_evictsOldestWhenSizeLimitExceeded() async {
-        // Given — size limit fits one image but not two
-        let tinyDir = FileManager.default.temporaryDirectory
+        // Given — limit = 2 images. After storing 3, sweep trims to 70% (1.4 images).
+        // Oldest entries are removed first, so 2 oldest go, 1 newest survives.
+        let evictDir = FileManager.default.temporaryDirectory
             .appendingPathComponent("DiskCacheEvict-\(UUID().uuidString)")
         let data = TestHelpers.createTestImageData()
-        let oneImageSize = data.count
-        let tinyCache = DiskCache(cacheDirectory: tinyDir, ttl: 3600, sizeLimit: oneImageSize + 1)
+        let limit = data.count * 2
+        let evictCache = DiskCache(cacheDirectory: evictDir, ttl: 3600, sizeLimit: limit)
 
         let url1 = URL(string: "https://example.com/first.png")!
         let url2 = URL(string: "https://example.com/second.png")!
+        let url3 = URL(string: "https://example.com/third.png")!
 
-        // When — store first (fits), then second triggers eviction of first
-        await tinyCache.store(data, for: url1)
-        await tinyCache.store(data, for: url2)
+        // When — store 3 images, exceeding the 2-image limit
+        await evictCache.store(data, for: url1)
+        await evictCache.store(data, for: url2)
+        await evictCache.store(data, for: url3)
 
-        // Then — oldest (url1) should be evicted, newest (url2) should survive
-        let first = await tinyCache.image(for: url1)
-        let second = await tinyCache.image(for: url2)
+        // Then — oldest (url1) should be evicted, newest (url3) should survive
+        let first = await evictCache.image(for: url1)
+        let third = await evictCache.image(for: url3)
         #expect(first == nil)
-        #expect(second != nil)
+        #expect(third != nil)
 
         // Cleanup
-        try? FileManager.default.removeItem(at: tinyDir)
+        try? FileManager.default.removeItem(at: evictDir)
+    }
+
+    @Test func test_sweepRemovesExpiredEntries() async {
+        // Given — TTL of 0 means everything expires, sweep should clean them
+        let sweepDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("DiskCacheSweep-\(UUID().uuidString)")
+        let expiredCache = DiskCache(cacheDirectory: sweepDir, ttl: 0, sizeLimit: 100 * 1024 * 1024)
+        let data = TestHelpers.createTestImageData()
+        let url = URL(string: "https://example.com/sweep.png")!
+
+        // When — store then immediately read (TTL=0 means expired)
+        await expiredCache.store(data, for: url)
+        let result = await expiredCache.image(for: url)
+
+        // Then
+        #expect(result == nil)
+
+        // Cleanup
+        try? FileManager.default.removeItem(at: sweepDir)
     }
 }
