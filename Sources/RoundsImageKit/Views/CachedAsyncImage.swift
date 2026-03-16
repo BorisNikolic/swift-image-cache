@@ -90,7 +90,6 @@ public struct CachedAsyncImage<Placeholder: View>: View {
         }
 
         isLoading = false
-        hasAttempted = true
     }
 }
 
