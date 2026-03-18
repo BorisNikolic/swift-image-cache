@@ -145,13 +145,24 @@ let image = try await loader.image(for: url)
 ### Cache Flow
 
 ```
-Request → Sync Memory Check (hit?) → ✅ Return instantly (no async)
-                  ↓ (miss)
-         Async Memory Cache (hit?) → ✅ Return UIImage
-                  ↓ (miss)
-         Disk Cache (hit + valid TTL?) → ✅ Downsample → Promote to memory, Return
-                  ↓ (miss or expired)
-         Network Download → ✅ Downsample to memory, raw Data to disk, Return
+┌─ View Layer (CachedAsyncImage / UICachedImageView) ─────────────┐
+│                                                                  │
+│  1. displayImage: sync NSCache check (hit?) → ✅ Show instantly  │
+│                         ↓ (miss)                                 │
+│  2. loadImage(): sync NSCache check (hit?) → ✅ Set @State       │
+│                         ↓ (miss)                                 │
+└──────────────── await imageLoader.image(for:) ──────────────────┘
+                          ↓
+┌─ ImageLoader Actor ─────────────────────────────────────────────┐
+│                                                                  │
+│  3. Async memory cache (hit?) → ✅ Return UIImage                │
+│                         ↓ (miss)                                 │
+│  4. Disk cache on ioQueue (hit + valid TTL?)                     │
+│         → ✅ Downsample → Store in memory → Return               │
+│                         ↓ (miss or expired)                      │
+│  5. Network download (Task.detached, deduplicated)               │
+│         → ✅ Downsample → Memory, raw Data → Disk, Return        │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ### Cancellation-Safe Deduplication
