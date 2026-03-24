@@ -210,7 +210,7 @@
 			mainGroup = A7F82D682F682819007E5375;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A7F82D9B2F682A1A007E5375 /* XCLocalSwiftPackageReference "../../rounds" */,
+				A7F82D9B2F682A1A007E5375 /* XCLocalSwiftPackageReference ".." */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A7F82D722F682819007E5375 /* Products */;
@@ -634,16 +634,16 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		A7F82D9B2F682A1A007E5375 /* XCLocalSwiftPackageReference "../../rounds" */ = {
+		A7F82D9B2F682A1A007E5375 /* XCLocalSwiftPackageReference ".." */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../rounds;
+			relativePath = ..;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		A7F82D9D2F682A80007E5375 /* RoundsImageKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A7F82D9B2F682A1A007E5375 /* XCLocalSwiftPackageReference "../../rounds" */;
+			package = A7F82D9B2F682A1A007E5375 /* XCLocalSwiftPackageReference ".." */;
 			productName = RoundsImageKit;
 		};
 /* End XCSwiftPackageProductDependency section */
