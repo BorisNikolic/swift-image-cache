@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RoundsImageKit"
-               BuildableName = "RoundsImageKit"
-               BlueprintName = "RoundsImageKit"
+               BlueprintIdentifier = "SwiftImageCache"
+               BuildableName = "SwiftImageCache"
+               BlueprintName = "SwiftImageCache"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -33,9 +33,9 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "RoundsImageKitTests"
-               BuildableName = "RoundsImageKitTests"
-               BlueprintName = "RoundsImageKitTests"
+               BlueprintIdentifier = "SwiftImageCacheTests"
+               BuildableName = "SwiftImageCacheTests"
+               BlueprintName = "SwiftImageCacheTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>

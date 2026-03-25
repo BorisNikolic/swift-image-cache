@@ -1,4 +1,4 @@
-
+//
 //  ExampleAppUITests.swift
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
@@ -62,7 +62,7 @@ final class ExampleAppUITests: XCTestCase {
     @MainActor
     func test_swiftUITab_showsNavigationTitle() throws {
         let app = launchApp()
-        let title = app.navigationBars["RoundsImageKit"]
+        let title = app.navigationBars["SwiftImageCache"]
         XCTAssertTrue(title.waitForExistence(timeout: 10))
     }
 
@@ -81,7 +81,7 @@ final class ExampleAppUITests: XCTestCase {
         let uikitTab = app.tabBars.buttons["UIKit"]
         uikitTab.tap()
 
-        let title = app.navigationBars["RoundsImageKit"]
+        let title = app.navigationBars["SwiftImageCache"]
         XCTAssertTrue(title.waitForExistence(timeout: 10))
     }
 

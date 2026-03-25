@@ -63,7 +63,7 @@ enum Theme {
     // MARK: - Strings
 
     enum Strings {
-        static let appTitle = NSLocalizedString("app.title", value: "RoundsImageKit", comment: "Main navigation title")
+        static let appTitle = NSLocalizedString("app.title", value: "SwiftImageCache", comment: "Main navigation title")
         static let swiftUITab = NSLocalizedString("tab.swiftui", value: "SwiftUI", comment: "SwiftUI tab title")
         static let uikitTab = NSLocalizedString("tab.uikit", value: "UIKit", comment: "UIKit tab title")
         static let clearCache = NSLocalizedString("action.clearCache", value: "Clear Cache", comment: "Clear cache button title")

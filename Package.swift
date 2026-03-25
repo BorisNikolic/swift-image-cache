@@ -3,25 +3,25 @@
 import PackageDescription
 
 let package = Package(
-    name: "RoundsImageKit",
+    name: "SwiftImageCache",
     platforms: [
         .iOS(.v15)
     ],
     products: [
         .library(
-            name: "RoundsImageKit",
-            targets: ["RoundsImageKit"]
+            name: "SwiftImageCache",
+            targets: ["SwiftImageCache"]
         )
     ],
     targets: [
         .target(
-            name: "RoundsImageKit",
-            path: "Sources/RoundsImageKit"
+            name: "SwiftImageCache",
+            path: "Sources/SwiftImageCache"
         ),
         .testTarget(
-            name: "RoundsImageKitTests",
-            dependencies: ["RoundsImageKit"],
-            path: "Tests/RoundsImageKitTests"
+            name: "SwiftImageCacheTests",
+            dependencies: ["SwiftImageCache"],
+            path: "Tests/SwiftImageCacheTests"
         )
     ]
 )

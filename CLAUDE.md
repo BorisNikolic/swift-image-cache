@@ -1,4 +1,4 @@
-# RoundsImageKit — Project Guide
+# SwiftImageCache — Project Guide
 
 Lightweight image downloading and caching library for iOS, with an example app demonstrating both SwiftUI and UIKit integration.
 
@@ -7,12 +7,12 @@ Lightweight image downloading and caching library for iOS, with an example app d
 ```
 rounds/
 ├── Package.swift                     # SPM manifest (swift-tools-version: 6.0)
-├── Sources/RoundsImageKit/           # SDK source code
+├── Sources/SwiftImageCache/           # SDK source code
 │   ├── Cache/                        # ImageCaching protocol, MemoryCache, DiskCache
 │   ├── Network/                      # ImageDownloading protocol, ImageDownloader
 │   ├── Views/                        # CachedAsyncImage (SwiftUI), UICachedImageView (UIKit)
 │   └── ImageLoader.swift             # Main public API (actor)
-├── Tests/RoundsImageKitTests/        # Unit tests (Swift Testing)
+├── Tests/SwiftImageCacheTests/        # Unit tests (Swift Testing)
 ├── ExampleApp/                       # Xcode project with SwiftUI + UIKit demo
 ├── BuildTools/                       # Pre-commit hook script
 └── .claude/                          # Claude Code config (rules, agents, skills)
@@ -30,11 +30,11 @@ rounds/
 
 ```bash
 # Build SDK
-xcodebuild build -scheme RoundsImageKit \
+xcodebuild build -scheme SwiftImageCache \
   -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.6'
 
 # Run unit tests
-xcodebuild test -scheme RoundsImageKitTests \
+xcodebuild test -scheme SwiftImageCacheTests \
   -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.6'
 
 # Build example app

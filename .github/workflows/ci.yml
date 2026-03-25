@@ -40,13 +40,13 @@ jobs:
 
       - name: Build SDK
         run: |
-          xcodebuild build -scheme RoundsImageKit \
+          xcodebuild build -scheme SwiftImageCache \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
             | xcpretty || true
 
       - name: Run SDK Tests
         run: |
           set -o pipefail
-          xcodebuild test -scheme RoundsImageKit \
+          xcodebuild test -scheme SwiftImageCache \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
             | xcpretty

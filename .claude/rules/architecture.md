@@ -3,7 +3,7 @@ description: SDK architecture and design principles
 globs: Sources/**/*.swift
 ---
 
-# RoundsImageKit Architecture
+# SwiftImageCache Architecture
 
 ## Design Principles
 

@@ -22,10 +22,10 @@ public final class DiskCache: DiskImageCaching, @unchecked Sendable {
     private let trimRatio: Double = 0.7
     private let sweepDelay: TimeInterval = 5
     private var currentSize: Int64 = 0
-    private let ioQueue = DispatchQueue(label: "com.roundsimagekit.diskcache", qos: .utility)
+    private let ioQueue = DispatchQueue(label: "com.swiftImageCache.diskcache", qos: .utility)
 
     public init(
-        directory: String = "RoundsImageKit",
+        directory: String = "SwiftImageCache",
         ttl: TimeInterval = 4 * 60 * 60,
         sizeLimit: Int = 100 * 1024 * 1024
     ) {

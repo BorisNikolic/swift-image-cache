@@ -3,7 +3,7 @@
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
 
-import RoundsImageKit
+import SwiftImageCache
 import UIKit
 
 final class UIKitImageListViewController: UICollectionViewController {

@@ -1,5 +1,5 @@
 /* Main navigation title */
-"app.title" = "RoundsImageKit";
+"app.title" = "SwiftImageCache";
 
 /* SwiftUI tab title */
 "tab.swiftui" = "SwiftUI";

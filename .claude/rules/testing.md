@@ -42,7 +42,7 @@ globs: Tests/**/*.swift
 ## Running Tests
 ```bash
 # All SDK unit tests
-xcodebuild test -scheme RoundsImageKitTests \
+xcodebuild test -scheme SwiftImageCacheTests \
   -destination 'platform=iOS Simulator,name=iPhone SE (3rd generation),OS=18.6' \
   2>&1 | grep -E "Test case|passed|failed|error:"
 

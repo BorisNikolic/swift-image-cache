@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A7F82D9E2F682A80007E5375 /* RoundsImageKit in Frameworks */ = {isa = PBXBuildFile; productRef = A7F82D9D2F682A80007E5375 /* RoundsImageKit */; };
+		A7F82D9E2F682A80007E5375 /* SwiftImageCache in Frameworks */ = {isa = PBXBuildFile; productRef = A7F82D9D2F682A80007E5375 /* SwiftImageCache */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,7 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A7F82D9E2F682A80007E5375 /* RoundsImageKit in Frameworks */,
+				A7F82D9E2F682A80007E5375 /* SwiftImageCache in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,7 +125,7 @@
 			);
 			name = ExampleApp;
 			packageProductDependencies = (
-				A7F82D9D2F682A80007E5375 /* RoundsImageKit */,
+				A7F82D9D2F682A80007E5375 /* SwiftImageCache */,
 			);
 			productName = ExampleApp;
 			productReference = A7F82D712F682819007E5375 /* ExampleApp.app */;
@@ -641,10 +641,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A7F82D9D2F682A80007E5375 /* RoundsImageKit */ = {
+		A7F82D9D2F682A80007E5375 /* SwiftImageCache */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = A7F82D9B2F682A1A007E5375 /* XCLocalSwiftPackageReference ".." */;
-			productName = RoundsImageKit;
+			productName = SwiftImageCache;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

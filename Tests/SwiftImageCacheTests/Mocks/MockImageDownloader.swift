@@ -3,7 +3,7 @@
 //
 //  Copyright © 2026 Boris Nikolic. All rights reserved.
 
-@testable import RoundsImageKit
+@testable import SwiftImageCache
 import UIKit
 
 final class MockImageDownloader: ImageDownloading, @unchecked Sendable {

@@ -1,5 +1,5 @@
 ---
-description: Swift coding conventions for the RoundsImageKit project
+description: Swift coding conventions for the SwiftImageCache project
 globs: Sources/**/*.swift, Tests/**/*.swift, ExampleApp/**/*.swift
 ---
 

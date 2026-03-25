@@ -1,11 +1,11 @@
-# 🖼️ RoundsImageKit
+# 🖼️ SwiftImageCache
 
 > A lightweight, zero-dependency image downloading and caching library for iOS.
 
 [![Swift 6.0](https://img.shields.io/badge/Swift-6.0-orange.svg)](https://swift.org)
 [![iOS 15+](https://img.shields.io/badge/iOS-15%2B-blue.svg)](https://developer.apple.com/ios/)
 [![SPM Compatible](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg)](https://swift.org/package-manager/)
-[![CI](https://github.com/BorisNikolic/rounds/actions/workflows/ci.yml/badge.svg)](https://github.com/BorisNikolic/rounds/actions/workflows/ci.yml)
+[![CI](https://github.com/BorisNikolic/swift-image-cache/actions/workflows/ci.yml/badge.svg)](https://github.com/BorisNikolic/swift-image-cache/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -39,7 +39,7 @@ Add to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/BorisNikolic/rounds.git", from: "1.0.0")
+    .package(url: "https://github.com/BorisNikolic/swift-image-cache.git", from: "1.0.0")
 ]
 ```
 
@@ -52,7 +52,7 @@ Or in Xcode: **File → Add Package Dependencies** → paste the repository URL.
 ### SwiftUI
 
 ```swift
-import RoundsImageKit
+import SwiftImageCache
 
 struct ImageView: View {
     let url: URL
@@ -73,7 +73,7 @@ struct ImageView: View {
 ### UIKit
 
 ```swift
-import RoundsImageKit
+import SwiftImageCache
 
 let imageView = UICachedImageView()
 imageView.placeholder = UIImage(systemName: "photo")
@@ -83,7 +83,7 @@ imageView.load(from: url)
 ### Direct API
 
 ```swift
-import RoundsImageKit
+import SwiftImageCache
 
 // Load an image
 let image = try await ImageLoader.shared.image(for: url)
@@ -98,7 +98,7 @@ await ImageLoader.shared.removeCachedImage(for: url)
 ### Custom Configuration
 
 ```swift
-import RoundsImageKit
+import SwiftImageCache
 
 let loader = ImageLoader(configuration: .init(
     ttl: 2 * 60 * 60,              // 2-hour TTL
@@ -226,7 +226,7 @@ The included **ExampleApp** demonstrates both SwiftUI and UIKit integration with
 make test
 
 # SDK unit tests (via xcodebuild)
-xcodebuild test -scheme RoundsImageKit \
+xcodebuild test -scheme SwiftImageCache \
   -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5'
 
 # ExampleApp unit tests
@@ -313,7 +313,7 @@ Install the pre-commit hook with `make hook`.
 ```
 rounds/
 ├── 📦 Package.swift                  # SPM manifest (swift-tools-version: 6.0)
-├── 📁 Sources/RoundsImageKit/        # SDK source code
+├── 📁 Sources/SwiftImageCache/        # SDK source code
 │   ├── Cache/                        # MemoryImageCaching, DiskImageCaching protocols
 │   │   ├── MemoryCache.swift         # NSCache wrapper (stores UIImage)
 │   │   ├── DiskCache.swift           # FileManager + SHA256 + TTL (stores raw Data)
@@ -324,7 +324,7 @@ rounds/
 │   │   ├── CachedAsyncImage.swift    # SwiftUI view
 │   │   └── UICachedImageView.swift   # UIKit view
 │   └── ImageLoader.swift             # Main API (actor + Configuration)
-├── 🧪 Tests/RoundsImageKitTests/     # 22 SDK unit tests (Swift Testing)
+├── 🧪 Tests/SwiftImageCacheTests/     # 22 SDK unit tests (Swift Testing)
 │   ├── Cache/                        # MemoryCache + DiskCache tests
 │   ├── Network/                      # ImageDownloader tests
 │   ├── Mocks/                        # Protocol-based mocks
@@ -359,7 +359,7 @@ Notable choices and why they were made:
 
 | Decision | Why |
 |----------|-----|
-| **Shared Xcode scheme** (`.swiftpm/xcode/xcshareddata/`) | SPM schemes are auto-generated per-user by default. Without checking in a shared scheme, `make test` and CI fail on a fresh clone because `xcodebuild -scheme RoundsImageKit` can't find the scheme. |
+| **Shared Xcode scheme** (`.swiftpm/xcode/xcshareddata/`) | SPM schemes are auto-generated per-user by default. Without checking in a shared scheme, `make test` and CI fail on a fresh clone because `xcodebuild -scheme SwiftImageCache` can't find the scheme. |
 | **`BuildTools/git-format-staged.sh`** | The pre-commit hook runs SwiftFormat only on **staged** files, not the entire codebase. This prevents reformatting unstaged work-in-progress during a commit. |
 | **Split protocols** (`MemoryImageCaching` / `DiskImageCaching`) | Memory cache stores decoded `UIImage` (fast retrieval), disk cache stores raw `Data` (format-preserving). A single protocol would force one to accept the wrong type. |
 | **`Task.detached` for downloads** | Shared downloads must survive caller cancellation (e.g. cell scrolling off-screen). A child task would be cancelled when any single caller cancels, killing the download for all waiters. |

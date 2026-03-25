@@ -5,7 +5,7 @@
 
 import Combine
 import Foundation
-import RoundsImageKit
+import SwiftImageCache
 
 @MainActor
 final class ImageListViewModel: ObservableObject {
